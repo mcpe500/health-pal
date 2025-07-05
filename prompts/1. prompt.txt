@@ -1,0 +1,1 @@
+1. Create a Flutter frontend project, a backend folder with backend.txt, a markdown-steps folder for progress, and a prompts folder for prompt storage.
