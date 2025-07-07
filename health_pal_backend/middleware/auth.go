@@ -12,7 +12,7 @@ import (
 // AuthMiddleware authenticates requests using JSON Web Tokens (JWT).
 // It checks for a valid "Bearer" token in the Authorization header.
 // If valid, it sets the "userID" and "userEmail" in the Gin context.
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(jwtSecret []byte) gin.HandlerFunc { // Accept jwtSecret as parameter
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -29,7 +29,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		claims, err := utils.ValidateJWT(tokenString)
+		claims, err := utils.ValidateJWT(tokenString, jwtSecret) // Pass jwtSecret to ValidateJWT
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 			c.Abort()

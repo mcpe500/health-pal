@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_sign_in: ^6.2.1 # For Google Sign-In
+  http: ^1.2.1 # For making HTTP requests
+  flutter_secure_storage: ^9.0.0 # For securely storing JWT
 
 dev_dependencies:
   flutter_test:

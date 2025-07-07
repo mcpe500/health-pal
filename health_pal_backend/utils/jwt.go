@@ -10,8 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go/v4"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
 // Claims defines the structure of JWT claims for the application.
 type Claims struct {
 	UserID int    `json:"user_id"`
@@ -21,7 +19,7 @@ type Claims struct {
 
 // GenerateJWT generates a new JSON Web Token (JWT) for the given user ID and email.
 // The token is signed with a secret key and expires after 24 hours.
-func GenerateJWT(userID int, email string) (string, error) {
+func GenerateJWT(userID int, email string, jwtSecret []byte) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		Email:  email,
@@ -42,7 +40,7 @@ func GenerateJWT(userID int, email string) (string, error) {
 // ValidateJWT validates the given JWT token string.
 // It returns the Claims extracted from the token if valid, or an error if the token
 // is invalid, expired, or malformed.
-func ValidateJWT(tokenString string) (*Claims, error) {
+func ValidateJWT(tokenString string, jwtSecret []byte) (*Claims, error) {
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

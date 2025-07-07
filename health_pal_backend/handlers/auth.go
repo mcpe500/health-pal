@@ -15,6 +15,7 @@ import (
 // AuthHandler holds dependencies for authentication related HTTP handlers.
 type AuthHandler struct {
 	UserModel *models.UserModel
+	JWTSecret []byte // Add JWTSecret to AuthHandler
 }
 
 // GoogleLoginRequest defines the structure for the Google login request body.
@@ -87,8 +88,8 @@ func (h *AuthHandler) GoogleLoginHandler(c *gin.Context) {
 		}
 	}
 
-	// Generate JWT
-	token, err := utils.GenerateJWT(user.ID, user.Email)
+	// Generate JWT using the secret from the handler's dependencies
+	token, err := utils.GenerateJWT(user.ID, user.Email, h.JWTSecret)
 	if err != nil {
 		log.Printf("Error generating JWT: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
