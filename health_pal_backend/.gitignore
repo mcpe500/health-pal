@@ -1,0 +1,17 @@
+# Binaries for programs
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Environment variables
+.env
