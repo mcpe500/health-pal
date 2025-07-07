@@ -73,7 +73,9 @@ func main() {
 
 	// Initialize models
 	userModel := &models.UserModel{DB: db}
-	stepModel := &models.StepModel{DB: db} // Initialize StepModel
+	stepModel := &models.StepModel{DB: db}
+	sittingTimeModel := &models.SittingTimeModel{DB: db}
+	waterIntakeModel := &models.WaterIntakeModel{DB: db} // Initialize WaterIntakeModel
 
 	// Retrieve JWT Secret after loading .env
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
@@ -81,7 +83,9 @@ func main() {
 	// Initialize handlers
 	authHandler := &handlers.AuthHandler{UserModel: userModel, JWTSecret: jwtSecret}
 	deletionHandler := &handlers.DeletionHandler{UserModel: userModel}
-	stepHandler := &handlers.StepHandler{StepModel: stepModel} // Initialize StepHandler
+	stepHandler := &handlers.StepHandler{StepModel: stepModel}
+	sittingTimeHandler := &handlers.SittingTimeHandler{SittingTimeModel: sittingTimeModel}
+	waterIntakeHandler := &handlers.WaterIntakeHandler{WaterIntakeModel: waterIntakeModel} // Initialize WaterIntakeHandler
 
 	router := gin.Default()
 

@@ -3,7 +3,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:health_pal_frontend/auth/auth_service.dart';
 import 'package:health_pal_frontend/screens/login_screen.dart';
 import 'package:health_pal_frontend/utils/api_client.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:health_pal_frontend/auth/auth_service.dart';
+import 'package:health_pal_frontend/screens/login_screen.dart';
+import 'package:health_pal_frontend/utils/api_client.dart';
 import 'package:health_pal_frontend/services/step_service.dart'; // Import StepService
+import 'package:health_pal_frontend/services/sitting_time_service.dart'; // Import SittingTimeService
 import 'package:intl/intl.dart'; // For date formatting
 
 class HomeScreen extends StatefulWidget {
@@ -17,21 +23,26 @@ class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   final ApiClient _apiClient = ApiClient();
   final StepService _stepService = StepService(); // Initialize StepService
+  final SittingTimeService _sittingTimeService = SittingTimeService(); // Initialize SittingTimeService
   String _protectedDataMessage = 'Fetching protected data...';
   String _accountDeletionMessage = '';
   final TextEditingController _stepsController = TextEditingController(); // Controller for step input
+  final TextEditingController _sittingTimeController = TextEditingController(); // Controller for sitting time input
   List<StepEntry> _stepHistory = []; // List to store step history
+  List<SittingTimeEntry> _sittingTimeHistory = []; // List to store sitting time history
 
   @override
   void initState() {
     super.initState();
     _fetchProtectedData();
     _fetchStepHistory(); // Fetch step history on init
+    _fetchSittingTimeHistory(); // Fetch sitting time history on init
   }
 
   @override
   void dispose() {
     _stepsController.dispose();
+    _sittingTimeController.dispose();
     super.dispose();
   }
 
@@ -71,6 +82,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _fetchSittingTimeHistory() async {
+    try {
+      final history = await _sittingTimeService.getSittingTimeHistory();
+      setState(() {
+        _sittingTimeHistory = history;
+      });
+    } catch (e) {
+      debugPrint('Error fetching sitting time history: ${e.toString()}');
+    }
+  }
+
   Future<void> _recordSteps() async {
     final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final int? stepsCount = int.tryParse(_stepsController.text);
@@ -100,6 +122,38 @@ class _HomeScreenState extends State<HomeScreen> {
         SnackBar(content: Text('Error recording steps: ${e.toString()}')),
       );
       debugPrint('Error recording steps: ${e.toString()}');
+    }
+  }
+
+  Future<void> _recordSittingTime() async {
+    final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final int? durationMinutes = int.tryParse(_sittingTimeController.text);
+
+    if (durationMinutes == null || durationMinutes < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid duration in minutes.')),
+      );
+      return;
+    }
+
+    try {
+      final success = await _sittingTimeService.recordSittingTime(date, durationMinutes);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sitting time recorded successfully!')),
+        );
+        _sittingTimeController.clear();
+        _fetchSittingTimeHistory(); // Refresh history
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to record sitting time.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error recording sitting time: ${e.toString()}')),
+      );
+      debugPrint('Error recording sitting time: ${e.toString()}');
     }
   }
 
@@ -278,6 +332,42 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ListTile(
                             title: Text('Date: ${step.date}'),
                             trailing: Text('${step.stepsCount} steps'),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 40),
+            const Text('Track Your Sitting Time', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _sittingTimeController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Enter daily sitting time (minutes)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _recordSittingTime,
+              child: const Text('Record Sitting Time'),
+            ),
+            const SizedBox(height: 20),
+            const Text('Sitting Time History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _sittingTimeHistory.isEmpty
+                  ? const Center(child: Text('No sitting time data available.'))
+                  : ListView.builder(
+                      itemCount: _sittingTimeHistory.length,
+                      itemBuilder: (context, index) {
+                        final sittingTime = _sittingTimeHistory[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          child: ListTile(
+                            title: Text('Date: ${sittingTime.date}'),
+                            trailing: Text('${sittingTime.durationMinutes} minutes'),
                           ),
                         );
                       },

@@ -12,7 +12,7 @@ import (
 
 // SetupRoutes initializes and registers all API routes with the Gin router.
 // It takes the Gin router instance and handler dependencies as arguments.
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler) {
+func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler) {
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
 
@@ -51,6 +51,14 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletion
 			// Step Tracking API Routes
 			protected.POST("/steps", stepHandler.RecordStepsHandler)
 			protected.GET("/steps/history", stepHandler.GetStepsHistoryHandler)
+
+			// Sitting Time Tracking API Routes
+			protected.POST("/sitting-times", sittingTimeHandler.RecordSittingTimeHandler)
+			protected.GET("/sitting-times/history", sittingTimeHandler.GetSittingTimeHistoryHandler)
+
+			// Water Intake Tracking API Routes
+			protected.POST("/water-intakes", waterIntakeHandler.RecordWaterIntakeHandler)
+			protected.GET("/water-intakes/history", waterIntakeHandler.GetWaterIntakeHistoryHandler)
 		}
 	}
 }

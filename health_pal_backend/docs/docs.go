@@ -24,6 +24,108 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/sitting-times": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Records or updates the daily sitting time in minutes for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SittingTime"
+                ],
+                "summary": "Record daily sitting time",
+                "parameters": [
+                    {
+                        "description": "Sitting time data",
+                        "name": "sittingTime",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.RecordSittingTimeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sitting time recorded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.SittingTimeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error: Invalid request payload",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "error: Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "error: Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sitting-times/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all recorded sitting times in minutes for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SittingTime"
+                ],
+                "summary": "Get sitting time history",
+                "responses": {
+                    "200": {
+                        "description": "List of sitting time entries",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.SittingTimeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "error: Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "error: Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/steps": {
             "post": {
                 "security": [
@@ -128,6 +230,22 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.RecordSittingTimeRequest": {
+            "type": "object",
+            "required": [
+                "date",
+                "duration_minutes"
+            ],
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
         "handlers.RecordStepsRequest": {
             "type": "object",
             "required": [
@@ -141,6 +259,29 @@ const docTemplate = `{
                 "steps_count": {
                     "type": "integer",
                     "minimum": 0
+                }
+            }
+        },
+        "models.SittingTimeResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

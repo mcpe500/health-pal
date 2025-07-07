@@ -1,5 +1,16 @@
 basePath: /api/v1
 definitions:
+  handlers.RecordSittingTimeRequest:
+    properties:
+      date:
+        type: string
+      duration_minutes:
+        minimum: 0
+        type: integer
+    required:
+    - date
+    - duration_minutes
+    type: object
   handlers.RecordStepsRequest:
     properties:
       date:
@@ -10,6 +21,21 @@ definitions:
     required:
     - date
     - steps_count
+    type: object
+  models.SittingTimeResponse:
+    properties:
+      created_at:
+        type: string
+      date:
+        type: string
+      duration_minutes:
+        type: integer
+      id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.StepResponse:
     properties:
@@ -40,6 +66,74 @@ info:
   title: Health Pal Backend API
   version: "1.0"
 paths:
+  /api/v1/sitting-times:
+    post:
+      consumes:
+      - application/json
+      description: Records or updates the daily sitting time in minutes for the authenticated
+        user.
+      parameters:
+      - description: Sitting time data
+        in: body
+        name: sittingTime
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RecordSittingTimeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sitting time recorded successfully
+          schema:
+            $ref: '#/definitions/models.SittingTimeResponse'
+        "400":
+          description: 'error: Invalid request payload'
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 'error: Unauthorized'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Record daily sitting time
+      tags:
+      - SittingTime
+  /api/v1/sitting-times/history:
+    get:
+      description: Retrieves all recorded sitting times in minutes for the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sitting time entries
+          schema:
+            items:
+              $ref: '#/definitions/models.SittingTimeResponse'
+            type: array
+        "401":
+          description: 'error: Unauthorized'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get sitting time history
+      tags:
+      - SittingTime
   /api/v1/steps:
     post:
       consumes:

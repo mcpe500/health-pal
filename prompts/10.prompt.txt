@@ -1,0 +1,9 @@
+please read @/markdown-steps and plaese help me implement:
+```
+Ticket 3: Sitting Time Tracking
+
+- Title: Implement Sitting Time Tracking Feature
+- Description: As a user, I want to track my daily sitting time so that I can monitor my sedentary behavior.
+- Estimated Time: 2 days
+```
+ansplease readplease read
