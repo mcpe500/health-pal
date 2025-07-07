@@ -1,0 +1,12 @@
+Now, I will create all the necessary directories and files for the testing setup as outlined in `markdown-steps/5. implementing-automated-tests.md`.
+
+**Action:**
+1.  Create the directory `health_pal_testing/api_tests/`.
+2.  Create the directory `health_pal_testing/flutter_apk_tests/`.
+3.  Create the directory `health_pal_testing/flutter_apk_tests/helpers/`.
+4.  Create the file `health_pal_testing/api_tests/config.js`.
+5.  Create the file `health_pal_testing/api_tests/auth.test.js`.
+6.  Create the file `health_pal_testing/api_tests/deletion.test.js`.
+7.  Create the file `health_pal_testing/flutter_apk_tests/helpers/driver.js`.
+8.  Create the file `health_pal_testing/flutter_apk_tests/auth_e2e.test.js`.
+9.  Create the file `health_pal_testing/flutter_apk_tests/deletion_e2e.test.js`.

@@ -1,0 +1,12 @@
+I have added a root `Makefile` to streamline the testing process.
+
+**Makefile Targets:**
+
+*   `make test-api`: Runs only the backend API tests using Jest.
+*   `make test-e2e`: Runs the Flutter APK E2E tests using WebdriverIO and Appium. (Requires a running Appium server and an Android emulator/device).
+*   `make test-all`: Runs both API and E2E tests.
+*   `make run-backend`: Starts the Go backend server.
+*   `make build-flutter-apk`: Builds the release APK for the Flutter app.
+*   `make clean`: Cleans up test reports and `node_modules` in the testing directory.
+
+To run the tests, you can now use these simple `make` commands from the project root.
