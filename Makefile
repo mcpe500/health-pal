@@ -27,6 +27,11 @@ run-backend:
 	@echo "Starting backend server..."
 	cd health_pal_backend && make run
 
+# Run database migrations
+db-migrate:
+	@echo "Running database migrations..."
+	cd migration && node scripts/resetDatabase.js
+
 # Build the Flutter APK
 build-flutter-apk:
 	@echo "Building Flutter APK..."

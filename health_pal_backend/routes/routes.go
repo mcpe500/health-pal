@@ -12,7 +12,7 @@ import (
 
 // SetupRoutes initializes and registers all API routes with the Gin router.
 // It takes the Gin router instance and handler dependencies as arguments.
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler) {
+func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler) {
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
 
@@ -47,6 +47,10 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletion
 			// Account Deletion API Routes
 			protected.POST("/delete-account/request-otp", deletionHandler.RequestDeleteAccountOTPAPI)
 			protected.POST("/delete-account/verify-otp", deletionHandler.VerifyDeleteAccountOTPAPI)
+
+			// Step Tracking API Routes
+			protected.POST("/steps", stepHandler.RecordStepsHandler)
+			protected.GET("/steps/history", stepHandler.GetStepsHistoryHandler)
 		}
 	}
 }

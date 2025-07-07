@@ -3,6 +3,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:health_pal_frontend/auth/auth_service.dart';
 import 'package:health_pal_frontend/screens/login_screen.dart';
 import 'package:health_pal_frontend/utils/api_client.dart';
+import 'package:health_pal_frontend/services/step_service.dart'; // Import StepService
+import 'package:intl/intl.dart'; // For date formatting
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,13 +16,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   final ApiClient _apiClient = ApiClient();
+  final StepService _stepService = StepService(); // Initialize StepService
   String _protectedDataMessage = 'Fetching protected data...';
   String _accountDeletionMessage = '';
+  final TextEditingController _stepsController = TextEditingController(); // Controller for step input
+  List<StepEntry> _stepHistory = []; // List to store step history
 
   @override
   void initState() {
     super.initState();
     _fetchProtectedData();
+    _fetchStepHistory(); // Fetch step history on init
+  }
+
+  @override
+  void dispose() {
+    _stepsController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchProtectedData() async {
@@ -45,6 +57,49 @@ class _HomeScreenState extends State<HomeScreen> {
         _protectedDataMessage = 'Error fetching protected data: ${e.toString()}';
       });
       debugPrint('Error fetching protected data: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchStepHistory() async {
+    try {
+      final history = await _stepService.getStepsHistory();
+      setState(() {
+        _stepHistory = history;
+      });
+    } catch (e) {
+      debugPrint('Error fetching step history: ${e.toString()}');
+    }
+  }
+
+  Future<void> _recordSteps() async {
+    final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final int? stepsCount = int.tryParse(_stepsController.text);
+
+    if (stepsCount == null || stepsCount < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid number of steps.')),
+      );
+      return;
+    }
+
+    try {
+      final success = await _stepService.recordSteps(date, stepsCount);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Steps recorded successfully!')),
+        );
+        _stepsController.clear();
+        _fetchStepHistory(); // Refresh history
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to record steps.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error recording steps: ${e.toString()}')),
+      );
+      debugPrint('Error recording steps: ${e.toString()}');
     }
   }
 
@@ -141,9 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(_protectedDataMessage),
             const SizedBox(height: 20),
@@ -190,6 +246,42 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
               child: const Text('Verify OTP & Delete Account'),
+            ),
+            const SizedBox(height: 40),
+            const Text('Track Your Steps', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _stepsController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Enter daily steps',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _recordSteps,
+              child: const Text('Record Steps'),
+            ),
+            const SizedBox(height: 20),
+            const Text('Step History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _stepHistory.isEmpty
+                  ? const Center(child: Text('No step data available.'))
+                  : ListView.builder(
+                      itemCount: _stepHistory.length,
+                      itemBuilder: (context, index) {
+                        final step = _stepHistory[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          child: ListTile(
+                            title: Text('Date: ${step.date}'),
+                            trailing: Text('${step.stepsCount} steps'),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

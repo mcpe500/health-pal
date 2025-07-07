@@ -1,4 +1,31 @@
 basePath: /api/v1
+definitions:
+  handlers.RecordStepsRequest:
+    properties:
+      date:
+        type: string
+      steps_count:
+        minimum: 0
+        type: integer
+    required:
+    - date
+    - steps_count
+    type: object
+  models.StepResponse:
+    properties:
+      created_at:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      steps_count:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -12,7 +39,73 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Health Pal Backend API
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/steps:
+    post:
+      consumes:
+      - application/json
+      description: Records or updates the daily step count for the authenticated user.
+      parameters:
+      - description: Steps data
+        in: body
+        name: steps
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RecordStepsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Steps recorded successfully
+          schema:
+            $ref: '#/definitions/models.StepResponse'
+        "400":
+          description: 'error: Invalid request payload'
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 'error: Unauthorized'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Record daily steps
+      tags:
+      - Steps
+  /api/v1/steps/history:
+    get:
+      description: Retrieves all recorded step counts for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of step entries
+          schema:
+            items:
+              $ref: '#/definitions/models.StepResponse'
+            type: array
+        "401":
+          description: 'error: Unauthorized'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get step history
+      tags:
+      - Steps
 securityDefinitions:
   ApiKeyAuth:
     in: header

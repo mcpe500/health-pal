@@ -1,0 +1,8 @@
+please read @/markdown-steps and plaese help me implement:
+```
+Ticket 2: Step Tracking
+
+- Title: Implement Step Tracking Feature
+- Description: As a user, I want to track my daily steps so that I can monitor my physical activity.
+```
+ansplease readplease read
