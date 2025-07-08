@@ -4,6 +4,8 @@ import 'package:health_pal_frontend/screens/login_screen.dart';
 import 'package:health_pal_frontend/screens/home_screen.dart';
 import 'package:health_pal_frontend/screens/health_plan_screen.dart'; // Import HealthPlanScreen
 import 'package:health_pal_frontend/screens/reminders_screen.dart'; // Import RemindersScreen
+import 'package:health_pal_frontend/screens/data_visualization_screen.dart'; // Import DataVisualizationScreen
+import 'package:health_pal_frontend/screens/hp_data_collection_screen.dart'; // Import HPDataCollectionScreen
 
 void main() {
   runApp(const MainApp());
@@ -51,6 +53,8 @@ class _MainAppState extends State<MainApp> {
         '/home': (context) => const HomeScreen(),
         '/health_plan': (context) => const HealthPlanScreen(), // Define route for HealthPlanScreen
         '/reminders': (context) => const RemindersScreen(), // Define route for RemindersScreen
+        '/data_visualization': (context) => const DataVisualizationScreen(), // Define route for DataVisualizationScreen
+        '/hp_data_collection': (context) => const HPDataCollectionScreen(), // Define route for HPDataCollectionScreen
       },
     );
   }

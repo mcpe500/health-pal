@@ -82,6 +82,7 @@ func main() {
 	dailyNutritionModel := &models.DailyNutritionModel{DB: db} // Initialize DailyNutritionModel
 	healthPlanModel := &models.HealthPlanModel{DB: db} // Initialize HealthPlanModel
 	reminderModel := &models.ReminderModel{DB: db} // Initialize ReminderModel
+	hpHealthDataModel := &models.HPHealthDataModel{DB: db} // Initialize HPHealthDataModel
 
 	// Retrieve JWT Secret after loading .env
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
@@ -97,6 +98,7 @@ func main() {
 	nutritionHandler := &handlers.NutritionHandler{DailyNutritionModel: dailyNutritionModel} // Initialize NutritionHandler
 	healthPlanHandler := &handlers.HealthPlanHandler{HealthPlanModel: healthPlanModel, DailyNutritionModel: dailyNutritionModel, StepModel: stepModel} // Initialize HealthPlanHandler
 	reminderHandler := &handlers.ReminderHandler{ReminderModel: reminderModel, DailyNutritionModel: dailyNutritionModel, StepModel: stepModel, HealthPlanModel: healthPlanModel} // Initialize ReminderHandler
+	hpDataHandler := &handlers.HPDataHandler{HPHealthDataModel: hpHealthDataModel} // Initialize HPDataHandler
 
 	router := gin.Default()
 
@@ -104,10 +106,10 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Setup routes
-	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler, healthPlanHandler, reminderHandler)
+	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler, healthPlanHandler, reminderHandler, hpDataHandler)
 
 	// Start background reminder scheduler
-	go startReminderScheduler(reminderModel)
+	go startReminderScheduler(reminderModel, userModel)
 
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(ginSwagger.URL("http://localhost:8080/swagger/doc.json"))) // Use ginSwagger.URL for dynamic host
@@ -137,7 +139,7 @@ func main() {
 
 // startReminderScheduler starts a background goroutine that checks for due reminders
 // and sends notifications at regular intervals
-func startReminderScheduler(reminderModel *models.ReminderModel) {
+func startReminderScheduler(reminderModel *models.ReminderModel, userModel *models.UserModel) {
 	ticker := time.NewTicker(5 * time.Minute) // Check every 5 minutes
 	defer ticker.Stop()
 
@@ -147,31 +149,40 @@ func startReminderScheduler(reminderModel *models.ReminderModel) {
 		select {
 		case <-ticker.C:
 			// Get all pending reminders that are due
-			reminders, err := reminderModel.GetDueReminders()
+			reminders, err := reminderModel.GetPendingReminders()
 			if err != nil {
 				log.Printf("Error fetching due reminders: %v", err)
 				continue
 			}
 
 			for _, reminder := range reminders {
+				user, err := userModel.GetUserByID(reminder.UserID)
+				if err != nil {
+					log.Printf("Error fetching user for reminder %d: %v", reminder.ID, err)
+					continue
+				}
+
 				// Send notification
-				err := utils.SendNotification(
-					reminder.UserEmail,
+				err = utils.SendEmailNotification(
+					user.Email,
 					"Health Pal Reminder",
-					reminder.Message,
+					reminder.ReminderText,
 				)
 				if err != nil {
-					log.Printf("Error sending notification for reminder %d: %v", reminder.ID, err)
+					log.Printf("Error sending notification for reminder %d to %s: %v", reminder.ID, user.Email, err)
 					continue
 				}
 
 				// Mark reminder as sent
-				err = reminderModel.MarkReminderAsSent(reminder.ID)
+				now := time.Now()
+				reminder.SentAt = &now
+				reminder.Status = "sent"
+				err = reminderModel.UpdateReminder(reminder)
 				if err != nil {
 					log.Printf("Error marking reminder %d as sent: %v", reminder.ID, err)
 				}
 
-				log.Printf("Sent reminder to %s: %s", reminder.UserEmail, reminder.Message)
+				log.Printf("Sent reminder to %s: %s", user.Email, reminder.ReminderText)
 			}
 		}
 	}

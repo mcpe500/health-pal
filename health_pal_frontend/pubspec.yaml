@@ -15,6 +15,8 @@ dependencies:
   intl: ^0.19.0 # For date formatting
   flutter_dotenv: ^5.1.0 # For environment variables
   image_picker: ^1.1.2 # For picking images from gallery or camera
+  fl_chart: ^0.68.0 # For data visualization
+  health: ^13.1.1 # For HealthKit/Google Fit integration
 
 dev_dependencies:
   flutter_test:

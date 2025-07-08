@@ -2,59 +2,40 @@ package utils
 
 import (
 	"fmt"
+	"log"
+	"net/smtp"
 	"os"
-
-	"gopkg.in/mail.v2"
+	"strings"
 )
 
-// SendNotification sends a notification to the user via email.
-// This is a simple implementation using email as the notification channel.
-// In a production environment, you might want to integrate with Firebase Cloud Messaging
-// or other push notification services.
-func SendNotification(userEmail, subject, message string) error {
-	// Get email configuration from environment variables
-	emailHost := os.Getenv("EMAIL_HOST")
-	emailPort := 587 // Default SMTP port
-	emailUsername := os.Getenv("EMAIL_USERNAME")
-	emailPassword := os.Getenv("EMAIL_PASSWORD")
-	emailFrom := os.Getenv("EMAIL_FROM")
+// SendEmailNotification sends an email notification to the specified recipient.
+func SendEmailNotification(toEmail, subject, body string) error {
+	from := os.Getenv("EMAIL_FROM")
+	password := os.Getenv("EMAIL_PASSWORD")
+	smtpHost := os.Getenv("EMAIL_HOST")
+	smtpPort := os.Getenv("EMAIL_PORT")
 
-	if emailHost == "" || emailUsername == "" || emailPassword == "" || emailFrom == "" {
-		return fmt.Errorf("email configuration not properly set in environment variables")
+	if from == "" || password == "" || smtpHost == "" || smtpPort == "" {
+		return fmt.Errorf("email environment variables are not fully set")
 	}
 
-	// Create a new message
-	m := mail.NewMessage()
-	m.SetHeader("From", emailFrom)
-	m.SetHeader("To", userEmail)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", fmt.Sprintf(`
-		<html>
-		<body>
-			<h2>Health Pal Reminder</h2>
-			<p>%s</p>
-			<br>
-			<p>Best regards,<br>Health Pal Team</p>
-		</body>
-		</html>
-	`, message))
+	msg := []byte(
+		"To: " + toEmail + "\r\n" +
+			"From: " + from + "\r\n" +
+			"Subject: " + subject + "\r\n" +
+			"Content-Type: text/plain; charset=UTF-8\r\n" +
+			"\r\n" +
+			body + "\r\n")
 
-	// Create a new dialer
-	d := mail.NewDialer(emailHost, emailPort, emailUsername, emailPassword)
+	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	// Send the email
-	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("failed to send notification email: %w", err)
+	addr := fmt.Sprintf("%s:%s", smtpHost, smtpPort)
+	err := smtp.SendMail(addr, auth, from, []string{toEmail}, msg)
+	if err != nil {
+		log.Printf("Error sending email to %s: %v", toEmail, err)
+		return fmt.Errorf("failed to send email: %w", err)
 	}
 
-	return nil
-}
-
-// SendPushNotification is a placeholder for future push notification implementation
-// This would integrate with Firebase Cloud Messaging or similar services
-func SendPushNotification(deviceToken, title, body string) error {
-	// TODO: Implement push notification logic
-	// For now, we'll just log that a push notification would be sent
-	fmt.Printf("Push notification would be sent to device %s: %s - %s\n", deviceToken, title, body)
+	log.Printf("Email sent successfully to %s", toEmail)
 	return nil
 }

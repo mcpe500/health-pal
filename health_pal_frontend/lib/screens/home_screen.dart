@@ -399,7 +399,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: const Text('Reminders'),
                   ),
                 ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/data_visualization'),
+                    icon: const Icon(Icons.show_chart),
+                    label: const Text('Visualize Data'),
+                  ),
+                ),
               ],
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/hp_data_collection'),
+                icon: const Icon(Icons.fitness_center),
+                label: const Text('HP Data Collection'),
+              ),
             ),
             const SizedBox(height: 20),
             Text(_protectedDataMessage),

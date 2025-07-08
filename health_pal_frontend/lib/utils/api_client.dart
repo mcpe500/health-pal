@@ -12,13 +12,18 @@ class ApiClient {
   SecureStorage get secureStorage => _secureStorage;
 
   // Helper for making authenticated GET requests
-  Future<http.Response> get(String path) async {
+  Future<http.Response> get(String path, {Map<String, dynamic>? queryParams}) async {
+    Uri uri = Uri.parse('$_backendApiUrl$path');
+    if (queryParams != null && queryParams.isNotEmpty) {
+      uri = uri.replace(queryParameters: queryParams.map((key, value) => MapEntry(key, value.toString())));
+    }
+
     final token = await _secureStorage.getJwtToken();
     final headers = <String, String>{};
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
-    return http.get(Uri.parse('$_backendApiUrl$path'), headers: headers);
+    return http.get(uri, headers: headers);
   }
 
   // Helper for making authenticated POST requests
