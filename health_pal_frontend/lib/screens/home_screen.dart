@@ -7,6 +7,7 @@ import 'package:health_pal_frontend/utils/api_client.dart';
 import 'package:health_pal_frontend/services/step_service.dart'; // Import StepService
 import 'package:health_pal_frontend/services/sitting_time_service.dart'; // Import SittingTimeService
 import 'package:health_pal_frontend/services/food_photo_service.dart'; // Import FoodPhotoService
+import 'package:health_pal_frontend/services/food_analysis_service.dart'; // Import FoodAnalysisService
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:image_picker/image_picker.dart'; // For image picking
 
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final StepService _stepService = StepService(apiClient: ApiClient());
   final SittingTimeService _sittingTimeService = SittingTimeService(apiClient: ApiClient());
   final FoodPhotoService _foodPhotoService = FoodPhotoService(apiClient: ApiClient());
+  final FoodAnalysisService _foodAnalysisService = FoodAnalysisService(apiClient: ApiClient()); // Initialize FoodAnalysisService
   String _protectedDataMessage = 'Fetching protected data...';
   String _accountDeletionMessage = '';
   final TextEditingController _stepsController = TextEditingController(); // Controller for step input
@@ -30,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<StepEntry> _stepHistory = []; // List to store step history
   List<SittingTimeEntry> _sittingTimeHistory = []; // List to store sitting time history
   List<Map<String, dynamic>> _foodPhotoHistory = []; // List to store food photo history
+  List<Map<String, dynamic>> _foodAnalysisHistory = []; // List to store food analysis history
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchStepHistory(); // Fetch step history on init
     _fetchSittingTimeHistory(); // Fetch sitting time history on init
     _fetchFoodPhotoHistory(); // Fetch food photo history on init
+    _fetchFoodAnalysisHistory(); // Fetch food analysis history on init
   }
 
   @override
@@ -102,6 +106,17 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       debugPrint('Error fetching food photo history: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchFoodAnalysisHistory() async {
+    try {
+      final history = await _foodAnalysisService.getFoodAnalysisHistory();
+      setState(() {
+        _foodAnalysisHistory = history;
+      });
+    } catch (e) {
+      debugPrint('Error fetching food analysis history: ${e.toString()}');
     }
   }
 
@@ -186,6 +201,21 @@ class _HomeScreenState extends State<HomeScreen> {
         SnackBar(content: Text('Error recording sitting time: ${e.toString()}')),
       );
       debugPrint('Error recording sitting time: ${e.toString()}');
+    }
+  }
+
+  Future<void> _analyzeFoodPhoto(int foodPhotoId) async {
+    try {
+      await _foodAnalysisService.requestFoodAnalysis(foodPhotoId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Food photo analysis requested!')),
+      );
+      _fetchFoodAnalysisHistory(); // Refresh analysis history
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to analyze food photo: ${e.toString()}')),
+      );
+      debugPrint('Error analyzing food photo: ${e.toString()}');
     }
   }
 
@@ -462,7 +492,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
+                              ElevatedButton(
+                                onPressed: () => _analyzeFoodPhoto(photo['id']),
+                                child: const Text('Analyze'),
+                              ),
                             ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 40),
+            const Text('Food Analysis History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _foodAnalysisHistory.isEmpty
+                  ? const Center(child: Text('No food analysis data available.'))
+                  : ListView.builder(
+                      itemCount: _foodAnalysisHistory.length,
+                      itemBuilder: (context, index) {
+                        final analysis = _foodAnalysisHistory[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5),
+                          child: ListTile(
+                            title: Text('Items: ${analysis['detected_items']}'),
+                            subtitle: Text('Calories: ${analysis['total_calories']} kcal'),
+                            trailing: Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(analysis['analysis_date']))),
                           ),
                         );
                       },

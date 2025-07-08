@@ -77,6 +77,8 @@ func main() {
 	sittingTimeModel := &models.SittingTimeModel{DB: db}
 	waterIntakeModel := &models.WaterIntakeModel{DB: db} // Initialize WaterIntakeModel
 	foodPhotoModel := &models.FoodPhotoModel{DB: db} // Initialize FoodPhotoModel
+	foodAnalysisModel := &models.FoodAnalysisModel{DB: db} // Initialize FoodAnalysisModel
+
 	// Retrieve JWT Secret after loading .env
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 
@@ -87,6 +89,7 @@ func main() {
 	sittingTimeHandler := &handlers.SittingTimeHandler{SittingTimeModel: sittingTimeModel}
 	waterIntakeHandler := &handlers.WaterIntakeHandler{WaterIntakeModel: waterIntakeModel} // Initialize WaterIntakeHandler
 	foodPhotoHandler := &handlers.FoodPhotoHandler{FoodPhotoModel: foodPhotoModel} // Initialize FoodPhotoHandler
+	foodAnalysisHandler := &handlers.FoodAnalysisHandler{FoodAnalysisModel: foodAnalysisModel, FoodPhotoModel: foodPhotoModel} // Initialize FoodAnalysisHandler
 
 	router := gin.Default()
 
@@ -94,7 +97,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Setup routes
-	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler)
+	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler)
 
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(ginSwagger.URL("http://localhost:8080/swagger/doc.json"))) // Use ginSwagger.URL for dynamic host
