@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"health_pal_backend/models"
+	models "health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
 	"path/filepath"

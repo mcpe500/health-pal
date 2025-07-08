@@ -23,10 +23,10 @@ type RecordWaterIntakeRequest struct {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param waterIntake body RecordWaterIntakeRequest true "Water intake data"
-// @Success 200 {object} models.WaterIntakeResponse "Water intake recorded successfully"
-// @Failure 400 {object} map[string]interface{} "error: Invalid request payload"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Success 200 {object} models.SuccessResponse "Water intake recorded successfully"
+// @Failure 400 {object} models.ErrorResponse "Invalid request payload"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/water-intakes [post]
 func RecordWaterIntakeHandler(waterIntakeModel *models.WaterIntakeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -90,8 +90,8 @@ func RecordWaterIntakeHandler(waterIntakeModel *models.WaterIntakeModel) gin.Han
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {array} models.WaterIntakeResponse "List of water intake entries"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/water-intakes/history [get]
 func GetWaterIntakeHistoryHandler(waterIntakeModel *models.WaterIntakeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {

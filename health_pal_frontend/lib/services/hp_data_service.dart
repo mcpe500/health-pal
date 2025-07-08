@@ -14,8 +14,18 @@ class HPDataService {
       HealthDataType.STEPS,
       HealthDataType.HEART_RATE,
       HealthDataType.HEIGHT,
-      HealthDataType.BODY_MASS_INDEX, // Using BMI as an example for body data
-      // Add more as needed
+      HealthDataType.BODY_MASS_INDEX,
+      HealthDataType.ACTIVE_ENERGY_BURNED,
+      HealthDataType.DISTANCE_WALKING_RUNNING,
+      HealthDataType.SLEEP_IN_BED,
+      HealthDataType.WEIGHT,
+      HealthDataType.BODY_FAT_PERCENTAGE,
+      HealthDataType.BASAL_ENERGY_BURNED,
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+      HealthDataType.RESPIRATORY_RATE,
+      HealthDataType.BODY_TEMPERATURE,
+      HealthDataType.BLOOD_GLUCOSE,
     ];
 
     // Request permissions

@@ -32,11 +32,6 @@ type WaterIntakeModel struct {
 	DB *gorm.DB
 }
 
-// FoodPhotoModel provides methods for interacting with the food_photos table.
-type FoodPhotoModel struct {
-	DB *gorm.DB
-}
-
 // CreateWaterIntake creates a new water intake entry in the database.
 func (m *WaterIntakeModel) CreateWaterIntake(waterIntake *WaterIntake) error {
 	return m.DB.Create(waterIntake).Error
@@ -65,5 +60,4 @@ func (m *WaterIntakeModel) GetWaterIntakesByUserID(userID uint) ([]WaterIntake, 
 		return nil, err
 	}
 	return waterIntakes, nil
-}
 }

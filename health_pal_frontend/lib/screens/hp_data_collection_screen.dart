@@ -82,7 +82,61 @@ class _HPDataCollectionScreenState extends State<HPDataCollectionScreen> {
               onPressed: () => _requestPermissionsAndCollect(HealthDataType.HEIGHT),
               child: const Text('Collect & Upload Height'),
             ),
-            // Add more buttons for other data types as needed
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.ACTIVE_ENERGY_BURNED),
+              child: const Text('Collect & Upload Active Energy Burned'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.DISTANCE_WALKING_RUNNING),
+              child: const Text('Collect & Upload Distance Walking/Running'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.SLEEP_IN_BED),
+              child: const Text('Collect & Upload Sleep in Bed'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.WEIGHT),
+              child: const Text('Collect & Upload Weight'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BODY_FAT_PERCENTAGE),
+              child: const Text('Collect & Upload Body Fat Percentage'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BASAL_ENERGY_BURNED),
+              child: const Text('Collect & Upload Basal Energy Burned'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BLOOD_PRESSURE_SYSTOLIC),
+              child: const Text('Collect & Upload Blood Pressure (Systolic)'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BLOOD_PRESSURE_DIASTOLIC),
+              child: const Text('Collect & Upload Blood Pressure (Diastolic)'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.RESPIRATORY_RATE),
+              child: const Text('Collect & Upload Respiratory Rate'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BODY_TEMPERATURE),
+              child: const Text('Collect & Upload Body Temperature'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _requestPermissionsAndCollect(HealthDataType.BLOOD_GLUCOSE),
+              child: const Text('Collect & Upload Blood Glucose'),
+            ),
           ],
         ),
       ),

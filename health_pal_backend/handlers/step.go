@@ -23,10 +23,10 @@ type RecordStepsRequest struct {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param steps body RecordStepsRequest true "Steps data"
-// @Success 200 {object} models.StepResponse "Steps recorded successfully"
-// @Failure 400 {object} map[string]interface{} "error: Invalid request payload"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Success 200 {object} models.SuccessResponse "Steps recorded successfully"
+// @Failure 400 {object} models.ErrorResponse "Invalid request payload"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/steps [post]
 func RecordStepsHandler(stepModel *models.StepModel) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -90,8 +90,8 @@ func RecordStepsHandler(stepModel *models.StepModel) gin.HandlerFunc {
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {array} models.StepResponse "List of step entries"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/steps/history [get]
 func GetStepsHistoryHandler(stepModel *models.StepModel) gin.HandlerFunc {
 	return func(c *gin.Context) {

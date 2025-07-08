@@ -23,10 +23,10 @@ type RecordSittingTimeRequest struct {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param sittingTime body RecordSittingTimeRequest true "Sitting time data"
-// @Success 200 {object} models.SittingTimeResponse "Sitting time recorded successfully"
-// @Failure 400 {object} map[string]interface{} "error: Invalid request payload"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Success 200 {object} models.SuccessResponse "Sitting time recorded successfully"
+// @Failure 400 {object} models.ErrorResponse "Invalid request payload"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/sitting-times [post]
 func RecordSittingTimeHandler(sittingTimeModel *models.SittingTimeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -90,8 +90,8 @@ func RecordSittingTimeHandler(sittingTimeModel *models.SittingTimeModel) gin.Han
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {array} models.SittingTimeResponse "List of sitting time entries"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
 // @Router /api/v1/sitting-times/history [get]
 func GetSittingTimeHistoryHandler(sittingTimeModel *models.SittingTimeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {
