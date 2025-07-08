@@ -15,14 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('food_analyses', {
+  return db.createTable('daily_nutrition_summaries', {
     id: { type: 'int', primaryKey: true, autoIncrement: true },
-    food_photo_id: {
+    user_id: {
       type: 'int',
       notNull: true,
       foreignKey: {
-        name: 'food_analyses_food_photo_id_fk',
-        table: 'food_photos',
+        name: 'daily_nutrition_summaries_user_id_fk',
+        table: 'users',
         rules: {
           onDelete: 'CASCADE',
           onUpdate: 'RESTRICT'
@@ -30,18 +30,17 @@ exports.up = function(db) {
         mapping: 'id'
       }
     },
-    detected_items: { type: 'text', notNull: true },
-    total_calories: { type: 'decimal', precision: 10, scale: 2, notNull: true },
+    record_date: { type: 'date', notNull: true, unique: true },
+    total_calories: { type: 'decimal', precision: 10, scale: 2, defaultValue: 0.0 },
     total_protein: { type: 'decimal', precision: 10, scale: 2, defaultValue: 0.0 },
     total_carbohydrates: { type: 'decimal', precision: 10, scale: 2, defaultValue: 0.0 },
     total_fats: { type: 'decimal', precision: 10, scale: 2, defaultValue: 0.0 },
     micronutrients_json: { type: 'text', defaultValue: null }, // Storing as JSON string
-    analysis_date: { type: 'datetime', defaultValue: new String('CURRENT_TIMESTAMP') },
     created_at: { type: 'datetime', defaultValue: new String('CURRENT_TIMESTAMP') },
     updated_at: { type: 'datetime', defaultValue: new String('CURRENT_TIMESTAMP') },
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('food_analyses');
+  return db.dropTable('daily_nutrition_summaries');
 };

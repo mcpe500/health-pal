@@ -1,3 +1,4 @@
+import 'dart:convert'; // Import for jsonDecode
 import 'dart:io'; // Required for File
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -8,6 +9,7 @@ import 'package:health_pal_frontend/services/step_service.dart'; // Import StepS
 import 'package:health_pal_frontend/services/sitting_time_service.dart'; // Import SittingTimeService
 import 'package:health_pal_frontend/services/food_photo_service.dart'; // Import FoodPhotoService
 import 'package:health_pal_frontend/services/food_analysis_service.dart'; // Import FoodAnalysisService
+import 'package:health_pal_frontend/services/nutrition_service.dart'; // Import NutritionService
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:image_picker/image_picker.dart'; // For image picking
 
@@ -25,14 +27,20 @@ class _HomeScreenState extends State<HomeScreen> {
   final SittingTimeService _sittingTimeService = SittingTimeService(apiClient: ApiClient());
   final FoodPhotoService _foodPhotoService = FoodPhotoService(apiClient: ApiClient());
   final FoodAnalysisService _foodAnalysisService = FoodAnalysisService(apiClient: ApiClient()); // Initialize FoodAnalysisService
+  final NutritionService _nutritionService = NutritionService(apiClient: ApiClient()); // Initialize NutritionService
   String _protectedDataMessage = 'Fetching protected data...';
   String _accountDeletionMessage = '';
   final TextEditingController _stepsController = TextEditingController(); // Controller for step input
   final TextEditingController _sittingTimeController = TextEditingController(); // Controller for sitting time input
+  final TextEditingController _manualCaloriesController = TextEditingController();
+  final TextEditingController _manualProteinController = TextEditingController();
+  final TextEditingController _manualCarbsController = TextEditingController();
+  final TextEditingController _manualFatsController = TextEditingController();
   List<StepEntry> _stepHistory = []; // List to store step history
   List<SittingTimeEntry> _sittingTimeHistory = []; // List to store sitting time history
   List<Map<String, dynamic>> _foodPhotoHistory = []; // List to store food photo history
   List<Map<String, dynamic>> _foodAnalysisHistory = []; // List to store food analysis history
+  Map<String, dynamic> _dailyNutritionSummary = {}; // To store daily nutrition summary
 
   @override
   void initState() {
@@ -42,12 +50,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchSittingTimeHistory(); // Fetch sitting time history on init
     _fetchFoodPhotoHistory(); // Fetch food photo history on init
     _fetchFoodAnalysisHistory(); // Fetch food analysis history on init
+    _fetchFoodAnalysisHistory(); // Fetch food analysis history on init
+    _fetchDailyNutritionSummary(DateTime.now()); // Fetch daily nutrition summary on init
   }
 
   @override
   void dispose() {
     _stepsController.dispose();
     _sittingTimeController.dispose();
+    _manualCaloriesController.dispose();
+    _manualProteinController.dispose();
+    _manualCarbsController.dispose();
+    _manualFatsController.dispose();
     super.dispose();
   }
 
@@ -117,6 +131,56 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       debugPrint('Error fetching food analysis history: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchDailyNutritionSummary(DateTime date) async {
+    try {
+      final summary = await _nutritionService.getDailyNutritionSummary(date);
+      setState(() {
+        _dailyNutritionSummary = summary;
+      });
+    } catch (e) {
+      debugPrint('Error fetching daily nutrition summary: ${e.toString()}');
+    }
+  }
+
+  Future<void> _logManualNutrition() async {
+    final String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final double? calories = double.tryParse(_manualCaloriesController.text);
+    final double? protein = double.tryParse(_manualProteinController.text);
+    final double? carbs = double.tryParse(_manualCarbsController.text);
+    final double? fats = double.tryParse(_manualFatsController.text);
+
+    if (calories == null || protein == null || carbs == null || fats == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter valid numbers for all nutrition fields.')),
+      );
+      return;
+    }
+
+    try {
+      await _nutritionService.logManualNutrition({
+        'record_date': date,
+        'total_calories': calories,
+        'total_protein': protein,
+        'total_carbohydrates': carbs,
+        'total_fats': fats,
+        'micronutrients_json': '{}', // Placeholder for now
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nutrition logged successfully!')),
+      );
+      _manualCaloriesController.clear();
+      _manualProteinController.clear();
+      _manualCarbsController.clear();
+      _manualFatsController.clear();
+      _fetchDailyNutritionSummary(DateTime.now()); // Refresh summary
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to log nutrition: ${e.toString()}')),
+      );
+      debugPrint('Error logging nutrition: ${e.toString()}');
     }
   }
 
@@ -527,5 +591,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Map<String, dynamic> _parseMicronutrients(String jsonString) {
+    try {
+      return jsonDecode(jsonString);
+    } catch (e) {
+      debugPrint('Error parsing micronutrients JSON: $e');
+      return {};
+    }
   }
 }

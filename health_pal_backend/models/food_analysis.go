@@ -12,6 +12,10 @@ type FoodAnalysis struct {
 	FoodPhotoID   uint           `gorm:"not null" json:"food_photo_id"`
 	DetectedItems string         `gorm:"type:text;not null" json:"detected_items"`
 	TotalCalories float64        `gorm:"type:decimal(10,2);not null" json:"total_calories"`
+	TotalProtein float64 `gorm:"type:decimal(10,2);default:0.0" json:"total_protein"`
+	TotalCarbohydrates float64 `gorm:"type:decimal(10,2);default:0.0" json:"total_carbohydrates"`
+	TotalFats float64 `gorm:"type:decimal(10,2);default:0.0" json:"total_fats"`
+	MicronutrientsJSON string `gorm:"type:text" json:"micronutrients_json,omitempty"` // Storing as JSON string
 	AnalysisDate  time.Time      `json:"analysis_date"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
@@ -25,9 +29,12 @@ type FoodAnalysisResponse struct {
 	FoodPhotoID   uint      `json:"food_photo_id"`
 	DetectedItems string    `json:"detected_items"`
 	TotalCalories float64   `json:"total_calories"`
+	TotalProtein float64 `json:"total_protein"`
+	TotalCarbohydrates float64 `json:"total_carbohydrates"`
+	TotalFats float64 `json:"total_fats"`
+	MicronutrientsJSON string `json:"micronutrients_json,omitempty"`
 	AnalysisDate  time.Time `json:"analysis_date"`
 	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // FoodAnalysisModel provides methods for interacting with the food_analyses table.

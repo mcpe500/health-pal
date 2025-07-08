@@ -14,7 +14,7 @@ import (
 // It takes the Gin router instance and handler dependencies as arguments,
 // including authHandler, deletionHandler, stepHandler, sittingTimeHandler,
 // waterIntakeHandler, foodPhotoHandler, and foodAnalysisHandler.
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler) {
+func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler, nutritionHandler *handlers.NutritionHandler) {
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
 
@@ -69,6 +69,10 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletion
 			// Food Analysis API Routes
 			protected.POST("/food-photos/analyze", foodAnalysisHandler.AnalyzeFoodPhotoHandler)
 			protected.GET("/food-photos/analysis-history", foodAnalysisHandler.GetFoodAnalysisHistoryHandler)
+
+			// Nutrition Tracking API Routes
+			protected.GET("/nutrition/daily-summary", nutritionHandler.GetDailyNutritionSummaryHandler)
+			protected.POST("/nutrition/manual-entry", nutritionHandler.ManualNutritionEntryHandler)
 		}
 	}
 }

@@ -17,6 +17,7 @@ import (
 type FoodAnalysisHandler struct {
 	FoodAnalysisModel *models.FoodAnalysisModel
 	FoodPhotoModel    *models.FoodPhotoModel
+	DailyNutritionModel *models.DailyNutritionModel // Add DailyNutritionModel
 }
 
 // AnalyzeFoodPhotoHandler handles the request to analyze a food photo using Gemini API.
@@ -69,17 +70,21 @@ func (h *FoodAnalysisHandler) AnalyzeFoodPhotoHandler(c *gin.Context) {
 	imagePath := filepath.Join(".", foodPhoto.ImageURL)
 
 	// Call Gemini API to analyze the image
-	detectedItems, totalCalories, err := utils.AnalyzeFoodImageWithGemini(imagePath)
+	detectedItems, totalCalories, totalProtein, totalCarbohydrates, totalFats, micronutrientsJSON, err := utils.AnalyzeFoodImageWithGemini(imagePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to analyze image with Gemini API: %v", err)})
 		return
 	}
 
 	foodAnalysis := models.FoodAnalysis{
-		FoodPhotoID:   foodPhoto.ID,
-		DetectedItems: detectedItems,
-		TotalCalories: totalCalories,
-		AnalysisDate:  time.Now(),
+		FoodPhotoID:        foodPhoto.ID,
+		DetectedItems:      detectedItems,
+		TotalCalories:      totalCalories,
+		TotalProtein:       totalProtein,
+		TotalCarbohydrates: totalCarbohydrates,
+		TotalFats:          totalFats,
+		MicronutrientsJSON: micronutrientsJSON,
+		AnalysisDate:       time.Now(),
 	}
 
 	if err := h.FoodAnalysisModel.CreateFoodAnalysis(&foodAnalysis); err != nil {
@@ -87,13 +92,33 @@ func (h *FoodAnalysisHandler) AnalyzeFoodPhotoHandler(c *gin.Context) {
 		return
 	}
 
+	// Aggregate nutrition data into DailyNutritionSummary
+	dailySummary := models.DailyNutritionSummary{
+		UserID:             userID.(uint),
+		RecordDate:         time.Now(),
+		TotalCalories:      foodAnalysis.TotalCalories,
+		TotalProtein:       foodAnalysis.TotalProtein,
+		TotalCarbohydrates: foodAnalysis.TotalCarbohydrates,
+		TotalFats:          foodAnalysis.TotalFats,
+		MicronutrientsJSON: foodAnalysis.MicronutrientsJSON,
+	}
+
+	if err := h.DailyNutritionModel.UpsertDailyNutritionSummary(&dailySummary); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update daily nutrition summary"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, models.FoodAnalysisResponse{
-		ID:            foodAnalysis.ID,
-		FoodPhotoID:   foodAnalysis.FoodPhotoID,
-		DetectedItems: foodAnalysis.DetectedItems,
-		TotalCalories: foodAnalysis.TotalCalories,
-		AnalysisDate:  foodAnalysis.AnalysisDate,
-		CreatedAt:     foodAnalysis.CreatedAt,
+		ID:                 foodAnalysis.ID,
+		FoodPhotoID:        foodAnalysis.FoodPhotoID,
+		DetectedItems:      foodAnalysis.DetectedItems,
+		TotalCalories:      foodAnalysis.TotalCalories,
+		TotalProtein:       foodAnalysis.TotalProtein,
+		TotalCarbohydrates: foodAnalysis.TotalCarbohydrates,
+		TotalFats:          foodAnalysis.TotalFats,
+		MicronutrientsJSON: foodAnalysis.MicronutrientsJSON,
+		AnalysisDate:       foodAnalysis.AnalysisDate,
+		CreatedAt:          foodAnalysis.CreatedAt,
 	})
 }
 
@@ -123,12 +148,16 @@ func (h *FoodAnalysisHandler) GetFoodAnalysisHistoryHandler(c *gin.Context) {
 	var response []models.FoodAnalysisResponse
 	for _, fa := range foodAnalyses {
 		response = append(response, models.FoodAnalysisResponse{
-			ID:            fa.ID,
-			FoodPhotoID:   fa.FoodPhotoID,
-			DetectedItems: fa.DetectedItems,
-			TotalCalories: fa.TotalCalories,
-			AnalysisDate:  fa.AnalysisDate,
-			CreatedAt:     fa.CreatedAt,
+			ID:                 fa.ID,
+			FoodPhotoID:        fa.FoodPhotoID,
+			DetectedItems:      fa.DetectedItems,
+			TotalCalories:      fa.TotalCalories,
+			TotalProtein:       fa.TotalProtein,
+			TotalCarbohydrates: fa.TotalCarbohydrates,
+			TotalFats:          fa.TotalFats,
+			MicronutrientsJSON: fa.MicronutrientsJSON,
+			AnalysisDate:       fa.AnalysisDate,
+			CreatedAt:          fa.CreatedAt,
 		})
 	}
 	c.JSON(http.StatusOK, response)

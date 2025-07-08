@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -41,4 +42,35 @@ func SaveUploadedFile(file *multipart.FileHeader, uploadDir string) (string, err
 	}
 
 	return filepath.Join(filepath.Base(uploadDir), filename), nil // Return relative path
+}
+
+// MergeJSONStrings merges two JSON strings.
+// This function is used to merge micronutrient data from different sources.
+func MergeJSONStrings(json1, json2 string) (string, error) {
+	var map1, map2 map[string]float64
+
+	err := json.Unmarshal([]byte(json1), &map1)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal first JSON string: %w", err)
+	}
+
+	err = json.Unmarshal([]byte(json2), &map2)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal second JSON string: %w", err)
+	}
+
+	mergedMap := make(map[string]float64)
+	for k, v := range map1 {
+		mergedMap[k] = v
+	}
+	for k, v := range map2 {
+		mergedMap[k] += v // Add values if key exists, otherwise add new key
+	}
+
+	mergedJSON, err := json.Marshal(mergedMap)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal merged map to JSON: %w", err)
+	}
+
+	return string(mergedJSON), nil
 }

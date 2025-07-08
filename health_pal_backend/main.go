@@ -78,6 +78,7 @@ func main() {
 	waterIntakeModel := &models.WaterIntakeModel{DB: db} // Initialize WaterIntakeModel
 	foodPhotoModel := &models.FoodPhotoModel{DB: db} // Initialize FoodPhotoModel
 	foodAnalysisModel := &models.FoodAnalysisModel{DB: db} // Initialize FoodAnalysisModel
+	dailyNutritionModel := &models.DailyNutritionModel{DB: db} // Initialize DailyNutritionModel
 
 	// Retrieve JWT Secret after loading .env
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
@@ -89,7 +90,8 @@ func main() {
 	sittingTimeHandler := &handlers.SittingTimeHandler{SittingTimeModel: sittingTimeModel}
 	waterIntakeHandler := &handlers.WaterIntakeHandler{WaterIntakeModel: waterIntakeModel} // Initialize WaterIntakeHandler
 	foodPhotoHandler := &handlers.FoodPhotoHandler{FoodPhotoModel: foodPhotoModel} // Initialize FoodPhotoHandler
-	foodAnalysisHandler := &handlers.FoodAnalysisHandler{FoodAnalysisModel: foodAnalysisModel, FoodPhotoModel: foodPhotoModel} // Initialize FoodAnalysisHandler
+	foodAnalysisHandler := &handlers.FoodAnalysisHandler{FoodAnalysisModel: foodAnalysisModel, FoodPhotoModel: foodPhotoModel, DailyNutritionModel: dailyNutritionModel} // Initialize FoodAnalysisHandler
+	nutritionHandler := &handlers.NutritionHandler{DailyNutritionModel: dailyNutritionModel} // Initialize NutritionHandler
 
 	router := gin.Default()
 
@@ -97,7 +99,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Setup routes
-	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler)
+	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler)
 
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(ginSwagger.URL("http://localhost:8080/swagger/doc.json"))) // Use ginSwagger.URL for dynamic host
