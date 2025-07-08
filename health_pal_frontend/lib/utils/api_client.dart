@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:health_pal_frontend/utils/secure_storage.dart';
 
 // Backend API URL - **IMPORTANT: Replace with your actual backend URL**
-const String backendApiUrl = 'http://localhost:8080';
+const String _backendApiUrl = 'http://localhost:8080';
 
 class ApiClient {
   final SecureStorage _secureStorage = SecureStorage();
+
+  String get baseUrl => _backendApiUrl;
+  SecureStorage get secureStorage => _secureStorage;
 
   // Helper for making authenticated GET requests
   Future<http.Response> get(String path) async {
@@ -15,7 +18,7 @@ class ApiClient {
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
-    return http.get(Uri.parse('$backendApiUrl$path'), headers: headers);
+    return http.get(Uri.parse('$_backendApiUrl$path'), headers: headers);
   }
 
   // Helper for making authenticated POST requests
@@ -25,7 +28,7 @@ class ApiClient {
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
-    return http.post(Uri.parse('$backendApiUrl$path'),
+    return http.post(Uri.parse('$_backendApiUrl$path'),
         headers: headers, body: jsonEncode(body));
   }
 

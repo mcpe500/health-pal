@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:health_pal_frontend/auth/auth_service.dart';
-import 'package:health_pal_frontend/screens/login_screen.dart';
-import 'package:health_pal_frontend/utils/api_client.dart';
+import 'dart:io'; // Required for File
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:health_pal_frontend/auth/auth_service.dart';
@@ -10,7 +6,9 @@ import 'package:health_pal_frontend/screens/login_screen.dart';
 import 'package:health_pal_frontend/utils/api_client.dart';
 import 'package:health_pal_frontend/services/step_service.dart'; // Import StepService
 import 'package:health_pal_frontend/services/sitting_time_service.dart'; // Import SittingTimeService
+import 'package:health_pal_frontend/services/food_photo_service.dart'; // Import FoodPhotoService
 import 'package:intl/intl.dart'; // For date formatting
+import 'package:image_picker/image_picker.dart'; // For image picking
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,14 +20,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   final ApiClient _apiClient = ApiClient();
-  final StepService _stepService = StepService(); // Initialize StepService
-  final SittingTimeService _sittingTimeService = SittingTimeService(); // Initialize SittingTimeService
+  final StepService _stepService = StepService(apiClient: ApiClient());
+  final SittingTimeService _sittingTimeService = SittingTimeService(apiClient: ApiClient());
+  final FoodPhotoService _foodPhotoService = FoodPhotoService(apiClient: ApiClient());
   String _protectedDataMessage = 'Fetching protected data...';
   String _accountDeletionMessage = '';
   final TextEditingController _stepsController = TextEditingController(); // Controller for step input
   final TextEditingController _sittingTimeController = TextEditingController(); // Controller for sitting time input
   List<StepEntry> _stepHistory = []; // List to store step history
   List<SittingTimeEntry> _sittingTimeHistory = []; // List to store sitting time history
+  List<Map<String, dynamic>> _foodPhotoHistory = []; // List to store food photo history
 
   @override
   void initState() {
@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchProtectedData();
     _fetchStepHistory(); // Fetch step history on init
     _fetchSittingTimeHistory(); // Fetch sitting time history on init
+    _fetchFoodPhotoHistory(); // Fetch food photo history on init
   }
 
   @override
@@ -90,6 +91,37 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       debugPrint('Error fetching sitting time history: ${e.toString()}');
+    }
+  }
+
+  Future<void> _fetchFoodPhotoHistory() async {
+    try {
+      final history = await _foodPhotoService.getFoodPhotoHistory();
+      setState(() {
+        _foodPhotoHistory = history;
+      });
+    } catch (e) {
+      debugPrint('Error fetching food photo history: ${e.toString()}');
+    }
+  }
+
+  Future<void> _pickAndUploadImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: source);
+
+    if (image != null) {
+      try {
+        await _foodPhotoService.uploadFoodPhoto(File(image.path));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Food photo uploaded successfully!')),
+        );
+        _fetchFoodPhotoHistory(); // Refresh history
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload food photo: ${e.toString()}')),
+        );
+        debugPrint('Error uploading food photo: ${e.toString()}');
+      }
     }
   }
 
@@ -368,6 +400,69 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ListTile(
                             title: Text('Date: ${sittingTime.date}'),
                             trailing: Text('${sittingTime.durationMinutes} minutes'),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 40),
+            const Text('Food Photo Upload', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _pickAndUploadImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Take Photo'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _pickAndUploadImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Pick from Gallery'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Text('Food Photo History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _foodPhotoHistory.isEmpty
+                  ? const Center(child: Text('No food photos available.'))
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Two columns
+                        crossAxisSpacing: 8.0,
+                        mainAxisSpacing: 8.0,
+                      ),
+                      itemCount: _foodPhotoHistory.length,
+                      itemBuilder: (context, index) {
+                        final photo = _foodPhotoHistory[index];
+                        return Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Image.network(
+                                  '${_apiClient.baseUrl}/uploads/food_photos/${photo['image_url'].split('/').last}', // Assuming image_url is relative and needs full path
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.error)),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  photo['created_at'] != null
+                                      ? DateFormat('yyyy-MM-dd HH:mm').format(DateTime.parse(photo['created_at']))
+                                      : 'Unknown Date',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },

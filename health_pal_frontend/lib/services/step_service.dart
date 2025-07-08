@@ -3,7 +3,9 @@ import 'package:health_pal_frontend/utils/api_client.dart';
 import 'package:http/http.dart' as http;
 
 class StepService {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient _apiClient;
+
+  StepService({required ApiClient apiClient}) : _apiClient = apiClient;
 
   Future<bool> recordSteps(String date, int stepsCount) async {
     final response = await _apiClient.post('/api/v1/steps', {

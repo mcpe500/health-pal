@@ -3,10 +3,12 @@ import 'package:health_pal_frontend/utils/api_client.dart';
 import 'package:http/http.dart' as http;
 
 class SittingTimeService {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient apiClient;
+
+  SittingTimeService({required this.apiClient});
 
   Future<bool> recordSittingTime(String date, int durationMinutes) async {
-    final response = await _apiClient.post('/api/v1/sitting-times', {
+    final response = await apiClient.post('/api/v1/sitting-times', {
       'date': date,
       'duration_minutes': durationMinutes,
     });
@@ -20,7 +22,7 @@ class SittingTimeService {
   }
 
   Future<List<SittingTimeEntry>> getSittingTimeHistory() async {
-    final response = await _apiClient.get('/api/v1/sitting-times/history');
+    final response = await apiClient.get('/api/v1/sitting-times/history');
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
