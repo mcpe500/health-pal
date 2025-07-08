@@ -27,6 +27,7 @@ type FoodAnalysisResponse struct {
 	TotalCalories float64   `json:"total_calories"`
 	AnalysisDate  time.Time `json:"analysis_date"`
 	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // FoodAnalysisModel provides methods for interacting with the food_analyses table.

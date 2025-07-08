@@ -11,7 +11,9 @@ import (
 )
 
 // SetupRoutes initializes and registers all API routes with the Gin router.
-// It takes the Gin router instance and handler dependencies as arguments.
+// It takes the Gin router instance and handler dependencies as arguments,
+// including authHandler, deletionHandler, stepHandler, sittingTimeHandler,
+// waterIntakeHandler, foodPhotoHandler, and foodAnalysisHandler.
 func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler) {
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
