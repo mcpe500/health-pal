@@ -36,7 +36,6 @@ type StepModel struct {
 func (m *StepModel) CreateStep(step *Step) error {
 	return m.DB.Create(step).Error
 }
-
 // GetStepByUserIDAndDate retrieves a step entry for a specific user and date.
 func (m *StepModel) GetStepByUserIDAndDate(userID uint, date time.Time) (*Step, error) {
 	var step Step

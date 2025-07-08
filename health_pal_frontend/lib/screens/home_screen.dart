@@ -381,6 +381,27 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Navigation buttons to other screens
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/health_plan'),
+                    icon: const Icon(Icons.health_and_safety),
+                    label: const Text('Health Plan'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/reminders'),
+                    icon: const Icon(Icons.notifications),
+                    label: const Text('Reminders'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             Text(_protectedDataMessage),
             const SizedBox(height: 20),
             Text(_accountDeletionMessage),

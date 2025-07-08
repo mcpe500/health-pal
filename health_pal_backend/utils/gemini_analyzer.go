@@ -117,3 +117,85 @@ Micronutrients: { "Vitamin C": "Xmg", "Iron": "Ymg" }`
 func DecodeBase64Image(base64String string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(base64String)
 }
+
+// GenerateHealthPlanWithGemini generates a personalized health plan using the Gemini API.
+func GenerateHealthPlanWithGemini(userID uint, userGoals string, nutritionData string, activityData string) (string, error) {
+	ctx := context.Background()
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		return "", fmt.Errorf("GEMINI_API_KEY environment variable not set")
+	}
+
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		return "", fmt.Errorf("failed to create Gemini client: %w", err)
+	}
+	defer client.Close()
+
+	model := client.GenerativeModel("gemini-pro") // Using gemini-pro for text generation
+
+	prompt := fmt.Sprintf(`Generate a personalized health plan for a user with the following details:
+User ID: %d
+Health Goals: %s
+Recent Nutrition Data: %s
+Recent Activity Data: %s
+
+The plan should include:
+- Dietary recommendations
+- Exercise suggestions
+- Lifestyle tips
+- A clear, actionable summary.
+
+Format the response as a JSON object with keys: "dietary_recommendations", "exercise_suggestions", "lifestyle_tips", "summary".`,
+		userID, userGoals, nutritionData, activityData)
+
+	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate content from Gemini API: %w", err)
+	}
+
+	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
+		return "", fmt.Errorf("no content generated from Gemini API")
+	}
+
+	return fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0]), nil
+}
+
+// GenerateReminderTextWithGemini generates personalized reminder text using the Gemini API.
+func GenerateReminderTextWithGemini(userID uint, healthGoals string, healthPlanSummary string, recentActivity string, recentNutrition string) (string, error) {
+	ctx := context.Background()
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		return "", fmt.Errorf("GEMINI_API_KEY environment variable not set")
+	}
+
+	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		return "", fmt.Errorf("failed to create Gemini client: %w", err)
+	}
+	defer client.Close()
+
+	model := client.GenerativeModel("gemini-pro") // Using gemini-pro for text generation
+
+	prompt := fmt.Sprintf(`Generate a concise and motivating health reminder for a user.
+User ID: %d
+Health Goals: %s
+Health Plan Summary: %s
+Recent Activity: %s
+Recent Nutrition: %s
+
+The reminder should be short, encouraging, and actionable, related to their goals and recent data.
+Example: "Don't forget your 30-min walk today! You're doing great towards your weight loss goal."`,
+		userID, healthGoals, healthPlanSummary, recentActivity, recentNutrition)
+
+	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate content from Gemini API: %w", err)
+	}
+
+	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
+		return "", fmt.Errorf("no content generated from Gemini API")
+	}
+
+	return fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0]), nil
+}

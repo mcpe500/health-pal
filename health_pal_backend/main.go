@@ -21,6 +21,7 @@ import (
 	"health_pal_backend/middleware" // Import middleware package
 	"health_pal_backend/models"     // Import the models package
 	"health_pal_backend/routes"     // Import routes package
+	"health_pal_backend/utils"      // Import utils package
 
 	"github.com/swaggo/files"       // swagger embed files
 	"github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -79,6 +80,8 @@ func main() {
 	foodPhotoModel := &models.FoodPhotoModel{DB: db} // Initialize FoodPhotoModel
 	foodAnalysisModel := &models.FoodAnalysisModel{DB: db} // Initialize FoodAnalysisModel
 	dailyNutritionModel := &models.DailyNutritionModel{DB: db} // Initialize DailyNutritionModel
+	healthPlanModel := &models.HealthPlanModel{DB: db} // Initialize HealthPlanModel
+	reminderModel := &models.ReminderModel{DB: db} // Initialize ReminderModel
 
 	// Retrieve JWT Secret after loading .env
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
@@ -92,6 +95,8 @@ func main() {
 	foodPhotoHandler := &handlers.FoodPhotoHandler{FoodPhotoModel: foodPhotoModel} // Initialize FoodPhotoHandler
 	foodAnalysisHandler := &handlers.FoodAnalysisHandler{FoodAnalysisModel: foodAnalysisModel, FoodPhotoModel: foodPhotoModel, DailyNutritionModel: dailyNutritionModel} // Initialize FoodAnalysisHandler
 	nutritionHandler := &handlers.NutritionHandler{DailyNutritionModel: dailyNutritionModel} // Initialize NutritionHandler
+	healthPlanHandler := &handlers.HealthPlanHandler{HealthPlanModel: healthPlanModel, DailyNutritionModel: dailyNutritionModel, StepModel: stepModel} // Initialize HealthPlanHandler
+	reminderHandler := &handlers.ReminderHandler{ReminderModel: reminderModel, DailyNutritionModel: dailyNutritionModel, StepModel: stepModel, HealthPlanModel: healthPlanModel} // Initialize ReminderHandler
 
 	router := gin.Default()
 
@@ -99,7 +104,10 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Setup routes
-	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler)
+	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler, healthPlanHandler, reminderHandler)
+
+	// Start background reminder scheduler
+	go startReminderScheduler(reminderModel)
 
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(ginSwagger.URL("http://localhost:8080/swagger/doc.json"))) // Use ginSwagger.URL for dynamic host
@@ -125,4 +133,46 @@ func main() {
 	// 	log.Fatal("DB close error:", err)
 	// }
 	log.Println("Server exiting")
+}
+
+// startReminderScheduler starts a background goroutine that checks for due reminders
+// and sends notifications at regular intervals
+func startReminderScheduler(reminderModel *models.ReminderModel) {
+	ticker := time.NewTicker(5 * time.Minute) // Check every 5 minutes
+	defer ticker.Stop()
+
+	log.Println("Reminder scheduler started")
+
+	for {
+		select {
+		case <-ticker.C:
+			// Get all pending reminders that are due
+			reminders, err := reminderModel.GetDueReminders()
+			if err != nil {
+				log.Printf("Error fetching due reminders: %v", err)
+				continue
+			}
+
+			for _, reminder := range reminders {
+				// Send notification
+				err := utils.SendNotification(
+					reminder.UserEmail,
+					"Health Pal Reminder",
+					reminder.Message,
+				)
+				if err != nil {
+					log.Printf("Error sending notification for reminder %d: %v", reminder.ID, err)
+					continue
+				}
+
+				// Mark reminder as sent
+				err = reminderModel.MarkReminderAsSent(reminder.ID)
+				if err != nil {
+					log.Printf("Error marking reminder %d as sent: %v", reminder.ID, err)
+				}
+
+				log.Printf("Sent reminder to %s: %s", reminder.UserEmail, reminder.Message)
+			}
+		}
+	}
 }

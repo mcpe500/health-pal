@@ -14,7 +14,7 @@ import (
 // It takes the Gin router instance and handler dependencies as arguments,
 // including authHandler, deletionHandler, stepHandler, sittingTimeHandler,
 // waterIntakeHandler, foodPhotoHandler, and foodAnalysisHandler.
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler, nutritionHandler *handlers.NutritionHandler) {
+func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler, nutritionHandler *handlers.NutritionHandler, healthPlanHandler *handlers.HealthPlanHandler, reminderHandler *handlers.ReminderHandler) {
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
 
@@ -73,6 +73,14 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletion
 			// Nutrition Tracking API Routes
 			protected.GET("/nutrition/daily-summary", nutritionHandler.GetDailyNutritionSummaryHandler)
 			protected.POST("/nutrition/manual-entry", nutritionHandler.ManualNutritionEntryHandler)
+
+			// Health Plan API Routes
+			protected.POST("/health-plan/generate", healthPlanHandler.GenerateHealthPlanHandler)
+			protected.GET("/health-plan", healthPlanHandler.GetHealthPlanHandler)
+
+			// Reminders API Routes
+			protected.POST("/reminders/schedule", reminderHandler.ScheduleReminderHandler)
+			protected.GET("/reminders", reminderHandler.GetRemindersHandler)
 		}
 	}
 }

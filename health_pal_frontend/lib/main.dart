@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:health_pal_frontend/auth/auth_service.dart';
 import 'package:health_pal_frontend/screens/login_screen.dart';
 import 'package:health_pal_frontend/screens/home_screen.dart';
+import 'package:health_pal_frontend/screens/health_plan_screen.dart'; // Import HealthPlanScreen
+import 'package:health_pal_frontend/screens/reminders_screen.dart'; // Import RemindersScreen
 
 void main() {
   runApp(const MainApp());
@@ -38,13 +40,18 @@ class _MainAppState extends State<MainApp> {
             );
           } else {
             if (snapshot.hasData && snapshot.data == true) {
-              return const HomeScreen();
+              return const HomeScreen(); // Or HealthPlanScreen, based on initial route
             } else {
               return const LoginScreen();
             }
           }
         },
       ),
+      routes: {
+        '/home': (context) => const HomeScreen(),
+        '/health_plan': (context) => const HealthPlanScreen(), // Define route for HealthPlanScreen
+        '/reminders': (context) => const RemindersScreen(), // Define route for RemindersScreen
+      },
     );
   }
 }
