@@ -18,7 +18,7 @@ type DailyNutritionSummary struct {
 	MicronutrientsJSON string         `gorm:"type:text" json:"micronutrients_json,omitempty"` // Storing as JSON string
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
-	DeletedAt          gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" swaggertype:"string"`
 	User               User           `gorm:"foreignKey:UserID" json:"-"` // Belongs To User
 }
 

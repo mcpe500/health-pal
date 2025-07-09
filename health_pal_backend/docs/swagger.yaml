@@ -1,5 +1,15 @@
 basePath: /api/v1
 definitions:
+  api_types.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  api_types.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
   handlers.RecordSittingTimeRequest:
     properties:
       date:
@@ -21,6 +31,175 @@ definitions:
     required:
     - date
     - steps_count
+    type: object
+  handlers.RecordWaterIntakeRequest:
+    properties:
+      amount_ml:
+        minimum: 0
+        type: integer
+      date:
+        type: string
+    required:
+    - amount_ml
+    - date
+    type: object
+  models.DailyNutritionSummary:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      micronutrients_json:
+        description: Storing as JSON string
+        type: string
+      record_date:
+        description: Unique per user per date
+        type: string
+      total_calories:
+        type: number
+      total_carbohydrates:
+        type: number
+      total_fats:
+        type: number
+      total_protein:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.DailyNutritionSummaryResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      micronutrients_json:
+        type: string
+      record_date:
+        type: string
+      total_calories:
+        type: number
+      total_carbohydrates:
+        type: number
+      total_fats:
+        type: number
+      total_protein:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  models.FoodAnalysisResponse:
+    properties:
+      analysis_date:
+        type: string
+      created_at:
+        type: string
+      detected_items:
+        type: string
+      food_photo_id:
+        type: integer
+      id:
+        type: integer
+      micronutrients_json:
+        type: string
+      total_calories:
+        type: number
+      total_carbohydrates:
+        type: number
+      total_fats:
+        type: number
+      total_protein:
+        type: number
+    type: object
+  models.FoodPhotoResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      meal_type:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.HPHealthData:
+    properties:
+      created_at:
+        type: string
+      data_type:
+        description: e.g., "steps", "heart_rate", "sleep"
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      timestamp:
+        type: string
+      unit:
+        description: e.g., "count", "bpm", "hours"
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      value:
+        type: number
+    type: object
+  models.HPHealthDataResponse:
+    properties:
+      created_at:
+        type: string
+      data_type:
+        type: string
+      id:
+        type: integer
+      timestamp:
+        type: string
+      unit:
+        type: string
+      user_id:
+        type: integer
+      value:
+        type: number
+    type: object
+  models.HealthPlanResponse:
+    properties:
+      created_at:
+        type: string
+      generated_date:
+        type: string
+      goal:
+        type: string
+      id:
+        type: integer
+      plan_details:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.ReminderResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      reminder_text:
+        type: string
+      scheduled_time:
+        type: string
+      sent_at:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.SittingTimeResponse:
     properties:
@@ -52,6 +231,21 @@ definitions:
       user_id:
         type: integer
     type: object
+  models.WaterIntakeResponse:
+    properties:
+      amount_ml:
+        type: integer
+      created_at:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -66,6 +260,424 @@ info:
   title: Health Pal Backend API
   version: "1.0"
 paths:
+  /api/v1/food-photos/analysis-history:
+    get:
+      description: Retrieves all food analysis results for the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Food analysis history retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.FoodAnalysisResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get food analysis history
+      tags:
+      - Food Analysis
+  /api/v1/food-photos/analyze:
+    post:
+      consumes:
+      - application/json
+      description: Analyzes an uploaded food photo using the Gemini API to extract
+        food items and calorie information.
+      parameters:
+      - description: ID of the food photo to analyze
+        in: body
+        name: food_photo_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Food photo analyzed successfully
+          schema:
+            $ref: '#/definitions/models.FoodAnalysisResponse'
+        "400":
+          description: Invalid request or food photo not found
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Analyze a food photo
+      tags:
+      - Food Analysis
+  /api/v1/food-photos/history:
+    get:
+      description: Retrieves all food photos uploaded by the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Food photo history retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.FoodPhotoResponse'
+            type: array
+        "400":
+          description: Invalid request or file upload error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get food photo history
+      tags:
+      - Food Photos
+  /api/v1/food-photos/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a food photo for the authenticated user.
+      parameters:
+      - description: Food photo image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Optional description for the food photo
+        in: formData
+        name: description
+        type: string
+      - description: Optional meal type (e.g., breakfast, lunch, dinner)
+        in: formData
+        name: meal_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Food photo uploaded successfully
+          schema:
+            $ref: '#/definitions/models.FoodPhotoResponse'
+        "400":
+          description: Invalid request or file upload error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload a food photo
+      tags:
+      - Food Photos
+  /api/v1/health-plan:
+    get:
+      description: Retrieves the latest personalized health plan for the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Health plan retrieved successfully
+          schema:
+            $ref: '#/definitions/models.HealthPlanResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "404":
+          description: Health plan not found
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get health plan
+      tags:
+      - Health Plan
+  /api/v1/health-plan/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generates a personalized health plan based on user's goals, nutrition,
+        and activity data using Gemini API.
+      parameters:
+      - description: User's health goals (e.g., 'Weight Loss', 'Muscle Gain')
+        in: body
+        name: goals
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Health plan generated successfully
+          schema:
+            $ref: '#/definitions/models.HealthPlanResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Generate a health plan
+      tags:
+      - Health Plan
+  /api/v1/hp-data/history:
+    get:
+      description: Retrieves historical health data for the authenticated user, with
+        optional filters.
+      parameters:
+      - description: Filter by data type (e.g., 'steps', 'heart_rate')
+        in: query
+        name: data_type
+        type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Health data history retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.HPHealthDataResponse'
+            type: array
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get HP health data history
+      tags:
+      - HP Data
+  /api/v1/hp-data/upload:
+    post:
+      consumes:
+      - application/json
+      description: Uploads health data collected from the user's phone (e.g., steps,
+        heart rate).
+      parameters:
+      - description: Array of health data entries
+        in: body
+        name: data
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.HPHealthData'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Health data uploaded successfully
+          schema:
+            $ref: '#/definitions/api_types.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload HP health data
+      tags:
+      - HP Data
+  /api/v1/nutrition/daily-summary:
+    get:
+      description: Retrieves the aggregated daily nutrition data for the authenticated
+        user for a given date.
+      parameters:
+      - description: Date in YYYY-MM-DD format
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Daily nutrition summary retrieved successfully
+          schema:
+            $ref: '#/definitions/models.DailyNutritionSummaryResponse'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "404":
+          description: Nutrition summary not found for the given date
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get daily nutrition summary
+      tags:
+      - Nutrition
+  /api/v1/nutrition/manual-entry:
+    post:
+      consumes:
+      - application/json
+      description: Allows users to manually input nutrition data for a specific date.
+      parameters:
+      - description: Nutrition data to log
+        in: body
+        name: nutrition
+        required: true
+        schema:
+          $ref: '#/definitions/models.DailyNutritionSummary'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Nutrition data logged successfully
+          schema:
+            $ref: '#/definitions/api_types.SuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Manually log nutrition data
+      tags:
+      - Nutrition
+  /api/v1/reminders:
+    get:
+      description: Retrieves all scheduled and sent reminders for the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reminders retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.ReminderResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get reminders
+      tags:
+      - Reminders
+  /api/v1/reminders/schedule:
+    post:
+      consumes:
+      - application/json
+      description: Schedules a personalized reminder based on user data and health
+        goals.
+      parameters:
+      - description: Reminder details (e.g., scheduled_time, type)
+        in: body
+        name: reminder
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Reminder scheduled successfully
+          schema:
+            $ref: '#/definitions/api_types.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Schedule a reminder
+      tags:
+      - Reminders
   /api/v1/sitting-times:
     post:
       consumes:
@@ -85,22 +697,19 @@ paths:
         "200":
           description: Sitting time recorded successfully
           schema:
-            $ref: '#/definitions/models.SittingTimeResponse'
+            $ref: '#/definitions/api_types.SuccessResponse'
         "400":
-          description: 'error: Invalid request payload'
+          description: Invalid request payload
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "401":
-          description: 'error: Unauthorized'
+          description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "500":
-          description: 'error: Internal server error'
+          description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Record daily sitting time
@@ -120,15 +729,13 @@ paths:
               $ref: '#/definitions/models.SittingTimeResponse'
             type: array
         "401":
-          description: 'error: Unauthorized'
+          description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "500":
-          description: 'error: Internal server error'
+          description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get sitting time history
@@ -152,22 +759,19 @@ paths:
         "200":
           description: Steps recorded successfully
           schema:
-            $ref: '#/definitions/models.StepResponse'
+            $ref: '#/definitions/api_types.SuccessResponse'
         "400":
-          description: 'error: Invalid request payload'
+          description: Invalid request payload
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "401":
-          description: 'error: Unauthorized'
+          description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "500":
-          description: 'error: Internal server error'
+          description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Record daily steps
@@ -186,20 +790,81 @@ paths:
               $ref: '#/definitions/models.StepResponse'
             type: array
         "401":
-          description: 'error: Unauthorized'
+          description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
         "500":
-          description: 'error: Internal server error'
+          description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api_types.ErrorResponse'
       security:
       - ApiKeyAuth: []
       summary: Get step history
       tags:
       - Steps
+  /api/v1/water-intakes:
+    post:
+      consumes:
+      - application/json
+      description: Records or updates the daily water intake in milliliters for the
+        authenticated user.
+      parameters:
+      - description: Water intake data
+        in: body
+        name: waterIntake
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RecordWaterIntakeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Water intake recorded successfully
+          schema:
+            $ref: '#/definitions/api_types.SuccessResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Record daily water intake
+      tags:
+      - WaterIntake
+  /api/v1/water-intakes/history:
+    get:
+      description: Retrieves all recorded water intake in milliliters for the authenticated
+        user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of water intake entries
+          schema:
+            items:
+              $ref: '#/definitions/models.WaterIntakeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/api_types.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get water intake history
+      tags:
+      - WaterIntake
 securityDefinitions:
   ApiKeyAuth:
     in: header

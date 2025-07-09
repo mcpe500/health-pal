@@ -53,6 +53,7 @@ export const config: WebdriverIO.Config = {
     // =====================
     // Define test files here.
     specs: [
+        './flutter_apk_tests/**/*.js',
         './flutter_apk_tests/**/*.ts'
     ],
     //

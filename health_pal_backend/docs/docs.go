@@ -24,6 +24,654 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/food-photos/analysis-history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all food analysis results for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Food Analysis"
+                ],
+                "summary": "Get food analysis history",
+                "responses": {
+                    "200": {
+                        "description": "Food analysis history retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FoodAnalysisResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/food-photos/analyze": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Analyzes an uploaded food photo using the Gemini API to extract food items and calorie information.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Food Analysis"
+                ],
+                "summary": "Analyze a food photo",
+                "parameters": [
+                    {
+                        "description": "ID of the food photo to analyze",
+                        "name": "food_photo_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Food photo analyzed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodAnalysisResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or food photo not found",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/food-photos/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all food photos uploaded by the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Food Photos"
+                ],
+                "summary": "Get food photo history",
+                "responses": {
+                    "200": {
+                        "description": "Food photo history retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FoodPhotoResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or file upload error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/food-photos/upload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads a food photo for the authenticated user.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Food Photos"
+                ],
+                "summary": "Upload a food photo",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Food photo image file",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional description for the food photo",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional meal type (e.g., breakfast, lunch, dinner)",
+                        "name": "meal_type",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Food photo uploaded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodPhotoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or file upload error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/health-plan": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves the latest personalized health plan for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health Plan"
+                ],
+                "summary": "Get health plan",
+                "responses": {
+                    "200": {
+                        "description": "Health plan retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.HealthPlanResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Health plan not found",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/health-plan/generate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Generates a personalized health plan based on user's goals, nutrition, and activity data using Gemini API.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health Plan"
+                ],
+                "summary": "Generate a health plan",
+                "parameters": [
+                    {
+                        "description": "User's health goals (e.g., 'Weight Loss', 'Muscle Gain')",
+                        "name": "goals",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Health plan generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.HealthPlanResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hp-data/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves historical health data for the authenticated user, with optional filters.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HP Data"
+                ],
+                "summary": "Get HP health data history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by data type (e.g., 'steps', 'heart_rate')",
+                        "name": "data_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Health data history retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.HPHealthDataResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hp-data/upload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Uploads health data collected from the user's phone (e.g., steps, heart rate).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HP Data"
+                ],
+                "summary": "Upload HP health data",
+                "parameters": [
+                    {
+                        "description": "Array of health data entries",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.HPHealthData"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Health data uploaded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/nutrition/daily-summary": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves the aggregated daily nutrition data for the authenticated user for a given date.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Nutrition"
+                ],
+                "summary": "Get daily nutrition summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date in YYYY-MM-DD format",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daily nutrition summary retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.DailyNutritionSummaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Nutrition summary not found for the given date",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/nutrition/manual-entry": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Allows users to manually input nutrition data for a specific date.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Nutrition"
+                ],
+                "summary": "Manually log nutrition data",
+                "parameters": [
+                    {
+                        "description": "Nutrition data to log",
+                        "name": "nutrition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DailyNutritionSummary"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Nutrition data logged successfully",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/reminders": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all scheduled and sent reminders for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reminders"
+                ],
+                "summary": "Get reminders",
+                "responses": {
+                    "200": {
+                        "description": "Reminders retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ReminderResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/reminders/schedule": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Schedules a personalized reminder based on user data and health goals.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reminders"
+                ],
+                "summary": "Schedule a reminder",
+                "parameters": [
+                    {
+                        "description": "Reminder details (e.g., scheduled_time, type)",
+                        "name": "reminder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Reminder scheduled successfully",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/sitting-times": {
             "post": {
                 "security": [
@@ -57,28 +705,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Sitting time recorded successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.SittingTimeResponse"
+                            "$ref": "#/definitions/api_types.SuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "error: Invalid request payload",
+                        "description": "Invalid request payload",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "error: Unauthorized",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "error: Internal server error",
+                        "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     }
                 }
@@ -110,17 +755,15 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "error: Unauthorized",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "error: Internal server error",
+                        "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     }
                 }
@@ -159,28 +802,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Steps recorded successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.StepResponse"
+                            "$ref": "#/definitions/api_types.SuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "error: Invalid request payload",
+                        "description": "Invalid request payload",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "error: Unauthorized",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "error: Internal server error",
+                        "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     }
                 }
@@ -212,17 +852,112 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "error: Unauthorized",
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "error: Internal server error",
+                        "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/water-intakes": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Records or updates the daily water intake in milliliters for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WaterIntake"
+                ],
+                "summary": "Record daily water intake",
+                "parameters": [
+                    {
+                        "description": "Water intake data",
+                        "name": "waterIntake",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.RecordWaterIntakeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Water intake recorded successfully",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/water-intakes/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all recorded water intake in milliliters for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WaterIntake"
+                ],
+                "summary": "Get water intake history",
+                "responses": {
+                    "200": {
+                        "description": "List of water intake entries",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.WaterIntakeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/api_types.ErrorResponse"
                         }
                     }
                 }
@@ -230,6 +965,22 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api_types.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_types.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.RecordSittingTimeRequest": {
             "type": "object",
             "required": [
@@ -259,6 +1010,261 @@ const docTemplate = `{
                 "steps_count": {
                     "type": "integer",
                     "minimum": 0
+                }
+            }
+        },
+        "handlers.RecordWaterIntakeRequest": {
+            "type": "object",
+            "required": [
+                "amount_ml",
+                "date"
+            ],
+            "properties": {
+                "amount_ml": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DailyNutritionSummary": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "micronutrients_json": {
+                    "description": "Storing as JSON string",
+                    "type": "string"
+                },
+                "record_date": {
+                    "description": "Unique per user per date",
+                    "type": "string"
+                },
+                "total_calories": {
+                    "type": "number"
+                },
+                "total_carbohydrates": {
+                    "type": "number"
+                },
+                "total_fats": {
+                    "type": "number"
+                },
+                "total_protein": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.DailyNutritionSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "micronutrients_json": {
+                    "type": "string"
+                },
+                "record_date": {
+                    "type": "string"
+                },
+                "total_calories": {
+                    "type": "number"
+                },
+                "total_carbohydrates": {
+                    "type": "number"
+                },
+                "total_fats": {
+                    "type": "number"
+                },
+                "total_protein": {
+                    "type": "number"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.FoodAnalysisResponse": {
+            "type": "object",
+            "properties": {
+                "analysis_date": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "detected_items": {
+                    "type": "string"
+                },
+                "food_photo_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "micronutrients_json": {
+                    "type": "string"
+                },
+                "total_calories": {
+                    "type": "number"
+                },
+                "total_carbohydrates": {
+                    "type": "number"
+                },
+                "total_fats": {
+                    "type": "number"
+                },
+                "total_protein": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.FoodPhotoResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "meal_type": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.HPHealthData": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "data_type": {
+                    "description": "e.g., \"steps\", \"heart_rate\", \"sleep\"",
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "unit": {
+                    "description": "e.g., \"count\", \"bpm\", \"hours\"",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.HPHealthDataResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "data_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.HealthPlanResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "generated_date": {
+                    "type": "string"
+                },
+                "goal": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "plan_details": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.ReminderResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "reminder_text": {
+                    "type": "string"
+                },
+                "scheduled_time": {
+                    "type": "string"
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -298,6 +1304,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "steps_count": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.WaterIntakeResponse": {
+            "type": "object",
+            "properties": {
+                "amount_ml": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "integer"
                 },
                 "updated_at": {

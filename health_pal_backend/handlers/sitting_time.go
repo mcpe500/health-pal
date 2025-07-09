@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 )
 
@@ -23,10 +24,10 @@ type RecordSittingTimeRequest struct {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param sittingTime body RecordSittingTimeRequest true "Sitting time data"
-// @Success 200 {object} models.SuccessResponse "Sitting time recorded successfully"
-// @Failure 400 {object} models.ErrorResponse "Invalid request payload"
-// @Failure 401 {object} models.ErrorResponse "Unauthorized"
-// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Success 200 {object} api_types.SuccessResponse "Sitting time recorded successfully"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request payload"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Router /api/v1/sitting-times [post]
 func RecordSittingTimeHandler(sittingTimeModel *models.SittingTimeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -90,8 +91,8 @@ func RecordSittingTimeHandler(sittingTimeModel *models.SittingTimeModel) gin.Han
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {array} models.SittingTimeResponse "List of sitting time entries"
-// @Failure 401 {object} models.ErrorResponse "Unauthorized"
-// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Router /api/v1/sitting-times/history [get]
 func GetSittingTimeHistoryHandler(sittingTimeModel *models.SittingTimeModel) gin.HandlerFunc {
 	return func(c *gin.Context) {

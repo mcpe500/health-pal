@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 	"net/http"
 	"time"
@@ -21,10 +22,10 @@ type HPDataHandler struct {
 // @Accept json
 // @Produce json
 // @Param data body []models.HPHealthData true "Array of health data entries"
-// @Success 201 {object} SuccessResponse "Health data uploaded successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request body"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Success 201 {object} api_types.SuccessResponse "Health data uploaded successfully"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request body"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/hp-data/upload [post]
 func (h *HPDataHandler) UploadHPDataHandler(c *gin.Context) {
@@ -60,9 +61,9 @@ func (h *HPDataHandler) UploadHPDataHandler(c *gin.Context) {
 // @Param start_date query string false "Filter by start date (YYYY-MM-DD)"
 // @Param end_date query string false "Filter by end date (YYYY-MM-DD)"
 // @Success 200 {array} models.HPHealthDataResponse "Health data history retrieved successfully"
-// @Failure 400 {object} ErrorResponse "Invalid date format"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid date format"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/hp-data/history [get]
 func (h *HPDataHandler) GetHPDataHistoryHandler(c *gin.Context) {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
@@ -26,9 +27,9 @@ type HealthPlanHandler struct {
 // @Produce json
 // @Param goals body string true "User's health goals (e.g., 'Weight Loss', 'Muscle Gain')"
 // @Success 201 {object} models.HealthPlanResponse "Health plan generated successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/health-plan/generate [post]
 func (h *HealthPlanHandler) GenerateHealthPlanHandler(c *gin.Context) {
@@ -98,9 +99,9 @@ func (h *HealthPlanHandler) GenerateHealthPlanHandler(c *gin.Context) {
 // @Tags Health Plan
 // @Produce json
 // @Success 200 {object} models.HealthPlanResponse "Health plan retrieved successfully"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 404 {object} ErrorResponse "Health plan not found"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 404 {object} api_types.ErrorResponse "Health plan not found"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/health-plan [get]
 func (h *HealthPlanHandler) GetHealthPlanHandler(c *gin.Context) {

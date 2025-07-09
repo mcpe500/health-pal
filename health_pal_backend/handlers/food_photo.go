@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
@@ -27,9 +28,9 @@ type FoodPhotoHandler struct {
 // @Param description formData string false "Optional description for the food photo"
 // @Param meal_type formData string false "Optional meal type (e.g., breakfast, lunch, dinner)"
 // @Success 201 {object} models.FoodPhotoResponse "Food photo uploaded successfully"
-// @Failure 400 {object} models.ErrorResponse "Invalid request or file upload error"
-// @Failure 401 {object} models.ErrorResponse "Unauthorized"
-// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request or file upload error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/food-photos/upload [post]
 func (h *FoodPhotoHandler) UploadFoodPhotoHandler(c *gin.Context) {
@@ -90,9 +91,9 @@ func (h *FoodPhotoHandler) UploadFoodPhotoHandler(c *gin.Context) {
 // @Tags Food Photos
 // @Produce json
 // @Success 200 {array} models.FoodPhotoResponse "Food photo history retrieved successfully"
-// @Failure 400 {object} models.ErrorResponse "Invalid request or file upload error"
-// @Failure 401 {object} models.ErrorResponse "Unauthorized"
-// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request or file upload error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/food-photos/history [get]
 func (h *FoodPhotoHandler) GetFoodPhotoHistoryHandler(c *gin.Context) {

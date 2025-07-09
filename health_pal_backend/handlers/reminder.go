@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
@@ -26,10 +27,10 @@ type ReminderHandler struct {
 // @Accept json
 // @Produce json
 // @Param reminder body object true "Reminder details (e.g., scheduled_time, type)"
-// @Success 201 {object} SuccessResponse "Reminder scheduled successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Success 201 {object} api_types.SuccessResponse "Reminder scheduled successfully"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/reminders/schedule [post]
 func (h *ReminderHandler) ScheduleReminderHandler(c *gin.Context) {
@@ -114,8 +115,8 @@ func (h *ReminderHandler) ScheduleReminderHandler(c *gin.Context) {
 // @Tags Reminders
 // @Produce json
 // @Success 200 {array} models.ReminderResponse "Reminders retrieved successfully"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/reminders [get]
 func (h *ReminderHandler) GetRemindersHandler(c *gin.Context) {

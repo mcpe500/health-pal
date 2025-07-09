@@ -1,4 +1,4 @@
-package models
+package api_types
 
 // SuccessResponse represents a generic success response.
 type SuccessResponse struct {

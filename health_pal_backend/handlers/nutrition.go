@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"health_pal_backend/api_types"
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
@@ -23,10 +24,10 @@ type NutritionHandler struct {
 // @Produce json
 // @Param date query string true "Date in YYYY-MM-DD format"
 // @Success 200 {object} models.DailyNutritionSummaryResponse "Daily nutrition summary retrieved successfully"
-// @Failure 400 {object} ErrorResponse "Invalid date format"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 404 {object} ErrorResponse "Nutrition summary not found for the given date"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid date format"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 404 {object} api_types.ErrorResponse "Nutrition summary not found for the given date"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/nutrition/daily-summary [get]
 func (h *NutritionHandler) GetDailyNutritionSummaryHandler(c *gin.Context) {
@@ -79,10 +80,10 @@ func (h *NutritionHandler) GetDailyNutritionSummaryHandler(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param nutrition body models.DailyNutritionSummary true "Nutrition data to log"
-// @Success 201 {object} SuccessResponse "Nutrition data logged successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request body"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Success 201 {object} api_types.SuccessResponse "Nutrition data logged successfully"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request body"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/nutrition/manual-entry [post]
 func (h *NutritionHandler) ManualNutritionEntryHandler(c *gin.Context) {

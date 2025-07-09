@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	models "health_pal_backend/models"
+	"health_pal_backend/api_types"
+	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
 	"path/filepath"
@@ -28,9 +29,9 @@ type FoodAnalysisHandler struct {
 // @Produce json
 // @Param food_photo_id body int true "ID of the food photo to analyze"
 // @Success 201 {object} models.FoodAnalysisResponse "Food photo analyzed successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request or food photo not found"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 400 {object} api_types.ErrorResponse "Invalid request or food photo not found"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/food-photos/analyze [post]
 func (h *FoodAnalysisHandler) AnalyzeFoodPhotoHandler(c *gin.Context) {
@@ -128,8 +129,8 @@ func (h *FoodAnalysisHandler) AnalyzeFoodPhotoHandler(c *gin.Context) {
 // @Tags Food Analysis
 // @Produce json
 // @Success 200 {array} models.FoodAnalysisResponse "Food analysis history retrieved successfully"
-// @Failure 401 {object} ErrorResponse "Unauthorized"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
+// @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /api/v1/food-photos/analysis-history [get]
 func (h *FoodAnalysisHandler) GetFoodAnalysisHistoryHandler(c *gin.Context) {
