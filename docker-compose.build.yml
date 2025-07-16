@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Build Android APK
+  build-apk:
+    build:
+      context: ./health_pal_frontend
+      dockerfile: Dockerfile.apk
+    container_name: health-pal-build-apk
+    ports:
+      - "8081:8080"
+    volumes:
+      - apk_builds:/app/output
+    networks:
+      - build-network
+
+  # Build iOS (Simulation)
+  build-ios:
+    build:
+      context: ./health_pal_frontend
+      dockerfile: Dockerfile.ios
+    container_name: health-pal-build-ios
+    ports:
+      - "8082:8080"
+    volumes:
+      - ios_builds:/app/output
+    networks:
+      - build-network
+
+  # Build Web App
+  build-web:
+    build:
+      context: ./health_pal_frontend
+      dockerfile: Dockerfile.web
+    container_name: health-pal-build-web
+    ports:
+      - "8083:8080"
+    networks:
+      - build-network
+
+  # Build Dashboard - Shows all build artifacts
+  build-dashboard:
+    image: nginx:alpine
+    container_name: health-pal-build-dashboard
+    ports:
+      - "8084:80"
+    volumes:
+      - ./build-dashboard:/usr/share/nginx/html:ro
+    networks:
+      - build-network
+    depends_on:
+      - build-apk
+      - build-ios
+      - build-web
+
+volumes:
+  apk_builds:
+    driver: local
+  ios_builds:
+    driver: local
+
+networks:
+  build-network:
+    driver: bridge

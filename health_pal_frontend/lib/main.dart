@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:health_pal_frontend/auth/auth_service.dart';
 import 'package:health_pal_frontend/screens/login_screen.dart';
-import 'package:health_pal_frontend/screens/home_screen.dart';
-import 'package:health_pal_frontend/screens/health_plan_screen.dart'; // Import HealthPlanScreen
-import 'package:health_pal_frontend/screens/reminders_screen.dart'; // Import RemindersScreen
-import 'package:health_pal_frontend/screens/data_visualization_screen.dart'; // Import DataVisualizationScreen
-import 'package:health_pal_frontend/screens/hp_data_collection_screen.dart'; // Import HPDataCollectionScreen
+import 'package:health_pal_frontend/screens/main_navigation.dart';
+import 'package:health_pal_frontend/theme/app_theme.dart';
 
 void main() {
   runApp(const MainApp());
@@ -31,6 +28,8 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Health Pal',
+      theme: AppTheme.lightTheme,
       home: FutureBuilder<bool>(
         future: _isAuthenticatedFuture,
         builder: (context, snapshot) {
@@ -42,20 +41,13 @@ class _MainAppState extends State<MainApp> {
             );
           } else {
             if (snapshot.hasData && snapshot.data == true) {
-              return const HomeScreen(); // Or HealthPlanScreen, based on initial route
+              return const MainNavigation();
             } else {
               return const LoginScreen();
             }
           }
         },
       ),
-      routes: {
-        '/home': (context) => const HomeScreen(),
-        '/health_plan': (context) => const HealthPlanScreen(), // Define route for HealthPlanScreen
-        '/reminders': (context) => const RemindersScreen(), // Define route for RemindersScreen
-        '/data_visualization': (context) => const DataVisualizationScreen(), // Define route for DataVisualizationScreen
-        '/hp_data_collection': (context) => const HPDataCollectionScreen(), // Define route for HPDataCollectionScreen
-      },
     );
   }
 }

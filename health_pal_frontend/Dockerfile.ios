@@ -1,0 +1,116 @@
+# Flutter iOS Build Dockerfile
+# Note: This is a simulation as iOS builds require macOS and Xcode
+# In a real scenario, you would need a macOS-based CI/CD system
+
+FROM cirrusci/flutter:stable
+
+USER root
+
+# Install dependencies for iOS simulation
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+USER flutter
+
+# Set working directory
+WORKDIR /app
+
+# Copy pubspec files
+COPY --chown=flutter:flutter pubspec.yaml pubspec.lock ./
+
+# Get dependencies
+RUN flutter pub get
+
+# Copy source code
+COPY --chown=flutter:flutter . .
+
+# Create iOS build simulation
+RUN mkdir -p /app/build/ios/ipa
+
+# Create a placeholder IPA file with build information
+RUN echo "Health Pal iOS Build" > /app/build/ios/ipa/build-info.txt && \
+    echo "Build Date: $(date)" >> /app/build/ios/ipa/build-info.txt && \
+    echo "Flutter Version: $(flutter --version | head -n 1)" >> /app/build/ios/ipa/build-info.txt && \
+    echo "" >> /app/build/ios/ipa/build-info.txt && \
+    echo "Note: This is a simulated iOS build." >> /app/build/ios/ipa/build-info.txt && \
+    echo "For actual iOS builds, you need:" >> /app/build/ios/ipa/build-info.txt && \
+    echo "- macOS environment" >> /app/build/ios/ipa/build-info.txt && \
+    echo "- Xcode installed" >> /app/build/ios/ipa/build-info.txt && \
+    echo "- Apple Developer account" >> /app/build/ios/ipa/build-info.txt && \
+    echo "- Proper code signing certificates" >> /app/build/ios/ipa/build-info.txt
+
+# Create a tar file to simulate IPA
+RUN cd /app/build/ios/ipa && \
+    tar -czf health-pal-ios-simulation.tar.gz build-info.txt
+
+# Create output directory
+RUN mkdir -p /app/output && \
+    cp /app/build/ios/ipa/health-pal-ios-simulation.tar.gz /app/output/
+
+# Production stage with simple HTTP server
+FROM python:3.9-alpine
+
+WORKDIR /app
+
+# Copy simulated iOS build
+COPY --from=0 /app/output/health-pal-ios-simulation.tar.gz ./
+
+# Create index.html for download page
+RUN echo '<!DOCTYPE html>' > index.html && \
+    echo '<html>' >> index.html && \
+    echo '<head>' >> index.html && \
+    echo '    <title>Health Pal iOS Build</title>' >> index.html && \
+    echo '    <style>' >> index.html && \
+    echo '        body { font-family: Arial, sans-serif; margin: 40px; }' >> index.html && \
+    echo '        .container { max-width: 600px; margin: 0 auto; }' >> index.html && \
+    echo '        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }' >> index.html && \
+    echo '        .download-btn { background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }' >> index.html && \
+    echo '    </style>' >> index.html && \
+    echo '</head>' >> index.html && \
+    echo '<body>' >> index.html && \
+    echo '    <div class="container">' >> index.html && \
+    echo '        <h1>Health Pal iOS Build</h1>' >> index.html && \
+    echo '        <div class="warning">' >> index.html && \
+    echo '            <strong>Note:</strong> This is a simulated iOS build environment.' >> index.html && \
+    echo '            Real iOS builds require macOS, Xcode, and Apple Developer certificates.' >> index.html && \
+    echo '        </div>' >> index.html && \
+    echo '        <p>For actual iOS deployment, you would need:</p>' >> index.html && \
+    echo '        <ul>' >> index.html && \
+    echo '            <li>macOS-based build environment</li>' >> index.html && \
+    echo '            <li>Xcode with iOS SDK</li>' >> index.html && \
+    echo '            <li>Apple Developer account</li>' >> index.html && \
+    echo '            <li>Code signing certificates</li>' >> index.html && \
+    echo '            <li>Provisioning profiles</li>' >> index.html && \
+    echo '        </ul>' >> index.html && \
+    echo '        <a href="/health-pal-ios-simulation.tar.gz" class="download-btn">Download Build Info</a>' >> index.html && \
+    echo '    </div>' >> index.html && \
+    echo '</body>' >> index.html && \
+    echo '</html>' >> index.html
+
+# Create simple HTTP server
+RUN echo '#!/usr/bin/env python3' > server.py && \
+    echo 'import http.server' >> server.py && \
+    echo 'import socketserver' >> server.py && \
+    echo '' >> server.py && \
+    echo 'PORT = 8080' >> server.py && \
+    echo '' >> server.py && \
+    echo 'class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):' >> server.py && \
+    echo '    def end_headers(self):' >> server.py && \
+    echo '        self.send_header("Access-Control-Allow-Origin", "*")' >> server.py && \
+    echo '        super().end_headers()' >> server.py && \
+    echo '' >> server.py && \
+    echo 'with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:' >> server.py && \
+    echo '    print(f"iOS Build Server running at http://localhost:{PORT}")' >> server.py && \
+    echo '    httpd.serve_forever()' >> server.py
+
+RUN chmod +x server.py
+
+EXPOSE 8080
+
+CMD ["python3", "server.py"]
