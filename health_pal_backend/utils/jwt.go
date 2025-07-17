@@ -4,7 +4,6 @@ package utils
 import (
 	"errors" // Added for errors.New
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go/v4"

@@ -60,3 +60,13 @@ func (m *StepModel) GetStepsByUserID(userID uint) ([]Step, error) {
 	}
 	return steps, nil
 }
+
+// GetStepsByUserIDAndDate retrieves step entries for a specific user and date.
+func (m *StepModel) GetStepsByUserIDAndDate(userID uint, date string) ([]Step, error) {
+	var steps []Step
+	err := m.DB.Where("user_id = ? AND date = ?", userID, date).Find(&steps).Error
+	if err != nil {
+		return nil, err
+	}
+	return steps, nil
+}

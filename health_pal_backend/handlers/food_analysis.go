@@ -1,12 +1,11 @@
 package handlers
 
 import (
-	"health_pal_backend/api_types"
+	_ "health_pal_backend/api_types" // Used in Swagger documentation
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"time"
 	"fmt"
 

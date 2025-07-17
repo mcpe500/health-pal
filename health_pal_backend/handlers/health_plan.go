@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"health_pal_backend/api_types"
+	_ "health_pal_backend/api_types" // Used in Swagger documentation
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"

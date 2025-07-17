@@ -4,6 +4,7 @@ package routes
 import (
 	"fmt" // Added for fmt.Sprintf
 	"net/http" // Added for http.StatusOK, http.StatusInternalServerError
+	"time" // Added for time.Now()
 
 	"github.com/gin-gonic/gin"
 	"health_pal_backend/handlers"
@@ -14,7 +15,16 @@ import (
 // It takes the Gin router instance and handler dependencies as arguments,
 // including authHandler, deletionHandler, stepHandler, sittingTimeHandler,
 // waterIntakeHandler, foodPhotoHandler, and foodAnalysisHandler.
-func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler, nutritionHandler *handlers.NutritionHandler, healthPlanHandler *handlers.HealthPlanHandler, reminderHandler *handlers.ReminderHandler, hpDataHandler *handlers.HPDataHandler) {
+func SetupRoutes(router *gin.Engine, jwtSecret []byte, authHandler *handlers.AuthHandler, deletionHandler *handlers.DeletionHandler, stepHandler *handlers.StepHandler, sittingTimeHandler *handlers.SittingTimeHandler, waterIntakeHandler *handlers.WaterIntakeHandler, foodPhotoHandler *handlers.FoodPhotoHandler, foodAnalysisHandler *handlers.FoodAnalysisHandler, nutritionHandler *handlers.NutritionHandler, healthPlanHandler *handlers.HealthPlanHandler, reminderHandler *handlers.ReminderHandler, hpDataHandler *handlers.HPDataHandler) {
+	// Health check endpoint
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "healthy",
+			"message": "Health Pal Backend is running",
+			"timestamp": fmt.Sprintf("%v", time.Now()),
+		})
+	})
+
 	// Public routes
 	router.POST("/auth/google-login", authHandler.GoogleLoginHandler)
 
@@ -29,7 +39,7 @@ func SetupRoutes(router *gin.Engine, authHandler *handlers.AuthHandler, deletion
 	{
 		// Protected routes (require JWT authentication)
 		protected := apiV1.Group("/") // Group for protected API routes under /api/v1
-		protected.Use(middleware.AuthMiddleware())
+		protected.Use(middleware.AuthMiddleware(jwtSecret))
 		{
 			protected.GET("/profile", func(c *gin.Context) {
 				userID, exists := c.Get("userID")

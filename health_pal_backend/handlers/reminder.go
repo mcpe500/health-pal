@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"health_pal_backend/api_types"
+	_ "health_pal_backend/api_types" // Used in Swagger documentation
 	"health_pal_backend/models"
 	"health_pal_backend/utils"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // ReminderHandler struct for handling reminder related requests
@@ -76,10 +75,15 @@ func (h *ReminderHandler) ScheduleReminderHandler(c *gin.Context) {
 	}
 
 	// Fetch recent activity data (e.g., for today)
-	steps, _ := h.StepModel.GetStepsByUserIDAndDate(userID.(uint), time.Now()) // Assuming GetStepsByUserIDAndDate exists
+	today := time.Now().Format("2006-01-02")
+	steps, _ := h.StepModel.GetStepsByUserIDAndDate(userID.(uint), today)
 	recentActivity := "No recent activity data."
-	if steps != nil {
-		recentActivity = fmt.Sprintf("Steps: %d", steps.StepsCount)
+	if len(steps) > 0 {
+		totalSteps := 0
+		for _, step := range steps {
+			totalSteps += step.StepsCount
+		}
+		recentActivity = fmt.Sprintf("Steps: %d", totalSteps)
 	}
 
 	reminderText := requestBody.CustomMessage

@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"health_pal_backend/api_types"
+	_ "health_pal_backend/api_types" // Used in Swagger documentation
 	"health_pal_backend/models"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // HPDataHandler struct for handling HP data related requests

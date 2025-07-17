@@ -1,49 +1,57 @@
-# Flutter Web Build Dockerfile
-FROM cirrusci/flutter:stable AS builder
+# Optimized Dockerfile specifically for Flutter Web builds
+FROM ubuntu:22.04 AS builder
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    wget \
+    unzip \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Flutter
+ENV FLUTTER_HOME=/opt/flutter
+ENV PATH=${FLUTTER_HOME}/bin:${PATH}
+
+RUN git clone https://github.com/flutter/flutter.git -b stable ${FLUTTER_HOME} && \
+    flutter config --enable-web && \
+    flutter doctor
 
 # Set working directory
 WORKDIR /app
 
-# Copy pubspec files
+# Copy pubspec files first for better caching
 COPY pubspec.yaml pubspec.lock ./
 
-# Get dependencies
+# Get Flutter dependencies
 RUN flutter pub get
 
 # Copy source code
 COPY . .
 
-# Build web app
+# Build for web
 RUN flutter build web --release --web-renderer html
 
-# Production stage with Nginx
+# Production stage with nginx
 FROM nginx:alpine
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy built web app
+# Copy built web files
 COPY --from=builder /app/build/web /usr/share/nginx/html
 
-# Create non-root user
-RUN addgroup -g 1001 -S nginx && \
-    adduser -u 1001 -S nginx -G nginx
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Set permissions
-RUN chown -R nginx:nginx /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d
+# Create health check endpoint
+RUN echo '<!DOCTYPE html><html><body><h1>Health Pal Web - Healthy</h1></body></html>' > /usr/share/nginx/html/health.html
 
-# Switch to non-root user
-USER nginx
-
-# Expose port
-EXPOSE 8080
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost/health.html || exit 1
 
-# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

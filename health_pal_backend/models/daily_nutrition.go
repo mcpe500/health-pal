@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"health_pal_backend/utils"
 	"gorm.io/gorm"
 )
 
@@ -71,7 +72,7 @@ func (m *DailyNutritionModel) UpsertDailyNutritionSummary(summary *DailyNutritio
 
 	// Merge micronutrients if both exist
 	if existingSummary.MicronutrientsJSON != "" && summary.MicronutrientsJSON != "" {
-		mergedMicros, err := MergeJSONStrings(existingSummary.MicronutrientsJSON, summary.MicronutrientsJSON)
+		mergedMicros, err := utils.MergeJSONStrings(existingSummary.MicronutrientsJSON, summary.MicronutrientsJSON)
 		if err != nil {
 			return err
 		}

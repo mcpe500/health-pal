@@ -1,64 +1,104 @@
-version: '3.8'
-
 services:
-  # Build Android APK
+  # Build APK
   build-apk:
     build:
       context: ./health_pal_frontend
       dockerfile: Dockerfile.apk
-    container_name: health-pal-build-apk
-    ports:
-      - "8081:8080"
+    container_name: health_pal_build_apk
     volumes:
-      - apk_builds:/app/output
-    networks:
-      - build-network
+      - ./builds/apk:/host_output  # Mount to local directory for external access
+    command: >
+      sh -c "
+        echo 'Starting APK build...' &&
+        flutter build apk --release --split-per-abi &&
+        echo 'Copying APK files...' &&
+        mkdir -p /host_output &&
+        cp build/app/outputs/flutter-apk/*.apk /host_output/ &&
+        echo 'APK build completed successfully!' &&
+        echo 'APK files available in ./builds/apk/ directory' &&
+        ls -la /host_output/
+      "
 
-  # Build iOS (Simulation)
-  build-ios:
-    build:
-      context: ./health_pal_frontend
-      dockerfile: Dockerfile.ios
-    container_name: health-pal-build-ios
-    ports:
-      - "8082:8080"
-    volumes:
-      - ios_builds:/app/output
-    networks:
-      - build-network
-
-  # Build Web App
+  # Build Web
   build-web:
     build:
       context: ./health_pal_frontend
       dockerfile: Dockerfile.web
-    container_name: health-pal-build-web
-    ports:
-      - "8083:8080"
-    networks:
-      - build-network
+    container_name: health_pal_build_web
+    volumes:
+      - ./builds/web:/host_output  # Mount to local directory for external access
+    command: >
+      sh -c "
+        echo 'Starting Web build...' &&
+        echo 'Copying Web files...' &&
+        mkdir -p /host_output &&
+        cp -r build/web/* /host_output/ &&
+        echo 'Web build completed successfully!' &&
+        echo 'Web files available in ./builds/web/ directory' &&
+        ls -la /host_output/
+      "
 
-  # Build Dashboard - Shows all build artifacts
+  # Build iOS (simulation)
+  build-ios:
+    build:
+      context: ./health_pal_frontend
+      dockerfile: Dockerfile.ios
+    container_name: health_pal_build_ios
+    volumes:
+      - ./builds/ios:/host_output  # Mount to local directory for external access
+    command: >
+      sh -c "
+        echo 'Starting iOS build simulation...' &&
+        mkdir -p /host_output &&
+        cp /app/ios_info/ios-build-info.txt /host_output/ &&
+        echo 'iOS build process completed!' &&
+        echo 'iOS info available in ./builds/ios/ directory' &&
+        ls -la /host_output/
+      "
+
+  # Serve APK builds
+  serve-apk:
+    image: nginx:alpine
+    container_name: health_pal_serve_apk
+    ports:
+      - "8081:80"
+    volumes:
+      - ./builds/apk:/usr/share/nginx/html
+      - ./nginx/apk.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - build-apk
+
+  # Serve Web builds
+  serve-web:
+    image: nginx:alpine
+    container_name: health_pal_serve_web
+    ports:
+      - "8083:80"
+    volumes:
+      - ./builds/web:/usr/share/nginx/html
+      - ./nginx/web.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - build-web
+
+  # Serve iOS info
+  serve-ios:
+    image: nginx:alpine
+    container_name: health_pal_serve_ios
+    ports:
+      - "8082:80"
+    volumes:
+      - ./builds/ios:/usr/share/nginx/html
+      - ./nginx/ios.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - build-ios
+
+  # Build Dashboard
   build-dashboard:
     image: nginx:alpine
-    container_name: health-pal-build-dashboard
+    container_name: health_pal_build_dashboard
     ports:
       - "8084:80"
     volumes:
-      - ./build-dashboard:/usr/share/nginx/html:ro
-    networks:
-      - build-network
-    depends_on:
-      - build-apk
-      - build-ios
-      - build-web
+      - ./nginx/dashboard.html:/usr/share/nginx/html/index.html
+      - ./nginx/dashboard.conf:/etc/nginx/conf.d/default.conf
 
-volumes:
-  apk_builds:
-    driver: local
-  ios_builds:
-    driver: local
-
-networks:
-  build-network:
-    driver: bridge

@@ -4,7 +4,7 @@ services:
   # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: health_pal_mysql
+    container_name: health_pal_mysql_podman
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root_password
@@ -14,10 +14,10 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_podman_data:/var/lib/mysql
       - ./migration:/docker-entrypoint-initdb.d
     networks:
-      - health_pal_network
+      - health_pal_podman_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -28,7 +28,7 @@ services:
     build:
       context: ./health_pal_backend
       dockerfile: Dockerfile
-    container_name: health_pal_backend
+    container_name: health_pal_backend_podman
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -49,14 +49,9 @@ services:
       mysql:
         condition: service_healthy
     networks:
-      - health_pal_network
+      - health_pal_podman_network
     volumes:
-      - backend_uploads:/app/uploads
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - backend_podman_uploads:/app/uploads
 
   # Flutter Frontend Development
   frontend-dev:
@@ -64,7 +59,7 @@ services:
       context: ./health_pal_frontend
       dockerfile: Dockerfile
       target: flutter-base
-    container_name: health_pal_frontend_dev
+    container_name: health_pal_frontend_podman
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -72,19 +67,34 @@ services:
       - API_BASE_URL=http://backend:8080
     volumes:
       - ./health_pal_frontend:/app
-      - flutter_pub_cache:/root/.pub-cache
+      - flutter_podman_cache:/root/.pub-cache
     working_dir: /app
     command: flutter run -d web-server --web-hostname 0.0.0.0 --web-port 3000
     depends_on:
       - backend
     networks:
-      - health_pal_network
+      - health_pal_podman_network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: health_pal_nginx_podman
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.podman.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+      - frontend-dev
+    networks:
+      - health_pal_podman_network
 
 volumes:
-  mysql_data:
-  backend_uploads:
-  flutter_pub_cache:
+  mysql_podman_data:
+  backend_podman_uploads:
+  flutter_podman_cache:
 
 networks:
-  health_pal_network:
+  health_pal_podman_network:
     driver: bridge

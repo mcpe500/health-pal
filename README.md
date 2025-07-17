@@ -50,6 +50,76 @@ Health Pal/
 └── docker-compose files   # Container orchestration
 ```
 
+## 📦 Building for External Access
+
+Health Pal supports building applications that can be accessed outside of Docker containers, perfect for distributing APK files, web builds, and other artifacts.
+
+### 🔨 Build Commands
+
+**Windows (using build.bat):**
+```bash
+# Build Android APK for external access
+build.bat apk
+
+# Build all platforms
+build.bat all
+
+# Build web application
+build.bat web
+
+# Clean all builds
+build.bat clean
+```
+
+**Linux/macOS (using Makefile):**
+```bash
+# Quick APK build for external access
+make apk
+
+# Build all platforms
+make build-all
+
+# Build specific platforms
+make build-apk
+make build-web
+make build-ios
+```
+
+### 📱 Accessing Build Artifacts
+
+After building, your artifacts will be available in these locations:
+
+- **APK Files**: `./builds/apk/` - Ready for Android installation
+- **Web Files**: `./builds/web/` - Deploy to any web server
+- **iOS Info**: `./builds/ios/` - Build information and requirements
+
+### 🌐 Build Servers
+
+The build process also starts local servers for easy access:
+
+- **APK Downloads**: http://localhost:8081
+- **Web Application**: http://localhost:8083
+- **iOS Information**: http://localhost:8082
+- **Build Dashboard**: http://localhost:8084
+
+### 📋 Example Workflow
+
+1. **Build APK for distribution:**
+   ```bash
+   build.bat apk
+   # APK files will be in ./builds/apk/
+   ```
+
+2. **Share APK with users:**
+   - Copy files from `./builds/apk/` to your distribution method
+   - Or direct users to http://localhost:8081 for direct download
+
+3. **Deploy web version:**
+   ```bash
+   build.bat web
+   # Copy ./builds/web/ contents to your web server
+   ```
+
 ## 🚀 Quick Start
 
 ### Prerequisites

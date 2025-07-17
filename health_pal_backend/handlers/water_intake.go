@@ -6,9 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"health_pal_backend/api_types"
+	_ "health_pal_backend/api_types" // Used in Swagger documentation
 	"health_pal_backend/models"
 )
+
+// WaterIntakeHandler struct for handling water intake related requests
+type WaterIntakeHandler struct {
+	WaterIntakeModel *models.WaterIntakeModel
+}
 
 // RecordWaterIntakeRequest represents the request body for recording water intake.
 type RecordWaterIntakeRequest struct {
@@ -29,59 +34,57 @@ type RecordWaterIntakeRequest struct {
 // @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
 // @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Router /api/v1/water-intakes [post]
-func RecordWaterIntakeHandler(waterIntakeModel *models.WaterIntakeModel) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userID, exists := c.Get("userID")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-			return
-		}
-
-		var req RecordWaterIntakeRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		parsedDate, err := time.Parse("2006-01-02", req.Date)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
-			return
-		}
-
-		// Check if a water intake entry already exists for the user and date
-		waterIntake, err := waterIntakeModel.GetWaterIntakeByUserIDAndDate(userID.(uint), parsedDate)
-		if err != nil && err != gorm.ErrRecordNotFound {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing water intake"})
-			return
-		}
-
-		if waterIntake != nil {
-			// Update existing entry
-			waterIntake.AmountML = req.AmountML
-			err = waterIntakeModel.UpdateWaterIntake(waterIntake)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update water intake"})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{"message": "Water intake updated successfully"})
-			return
-		}
-
-		// Create new entry
-		newWaterIntake := models.WaterIntake{
-			UserID:   userID.(uint),
-			Date:     parsedDate,
-			AmountML: req.AmountML,
-		}
-		err = waterIntakeModel.CreateWaterIntake(&newWaterIntake)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record water intake"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "Water intake recorded successfully"})
+func (h *WaterIntakeHandler) RecordWaterIntakeHandler(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
+
+	var req RecordWaterIntakeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	parsedDate, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		return
+	}
+
+	// Check if a water intake entry already exists for the user and date
+	waterIntake, err := h.WaterIntakeModel.GetWaterIntakeByUserIDAndDate(userID.(uint), parsedDate)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing water intake"})
+		return
+	}
+
+	if waterIntake != nil {
+		// Update existing entry
+		waterIntake.AmountML = req.AmountML
+		err = h.WaterIntakeModel.UpdateWaterIntake(waterIntake)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update water intake"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Water intake updated successfully"})
+		return
+	}
+
+	// Create new entry
+	newWaterIntake := models.WaterIntake{
+		UserID:   userID.(uint),
+		Date:     parsedDate,
+		AmountML: req.AmountML,
+	}
+	err = h.WaterIntakeModel.CreateWaterIntake(&newWaterIntake)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record water intake"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Water intake recorded successfully"})
 }
 
 // GetWaterIntakeHistoryHandler retrieves the water intake history for the authenticated user.
@@ -94,20 +97,18 @@ func RecordWaterIntakeHandler(waterIntakeModel *models.WaterIntakeModel) gin.Han
 // @Failure 401 {object} api_types.ErrorResponse "Unauthorized"
 // @Failure 500 {object} api_types.ErrorResponse "Internal server error"
 // @Router /api/v1/water-intakes/history [get]
-func GetWaterIntakeHistoryHandler(waterIntakeModel *models.WaterIntakeModel) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userID, exists := c.Get("userID")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-			return
-		}
-
-		waterIntakes, err := waterIntakeModel.GetWaterIntakesByUserID(userID.(uint))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve water intake history"})
-			return
-		}
-
-		c.JSON(http.StatusOK, waterIntakes)
+func (h *WaterIntakeHandler) GetWaterIntakeHistoryHandler(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
+
+	waterIntakes, err := h.WaterIntakeModel.GetWaterIntakesByUserID(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve water intake history"})
+		return
+	}
+
+	c.JSON(http.StatusOK, waterIntakes)
 }

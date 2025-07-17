@@ -1,6 +1,6 @@
 module health_pal_backend
 
-go 1.24.4
+go 1.24
 
 require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1

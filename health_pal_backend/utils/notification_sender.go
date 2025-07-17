@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/smtp"
 	"os"
-	"strings"
 )
 
 // SendEmailNotification sends an email notification to the specified recipient.

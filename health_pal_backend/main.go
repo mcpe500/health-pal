@@ -106,7 +106,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	// Setup routes
-	routes.SetupRoutes(router, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler, healthPlanHandler, reminderHandler, hpDataHandler)
+	routes.SetupRoutes(router, jwtSecret, authHandler, deletionHandler, stepHandler, sittingTimeHandler, waterIntakeHandler, foodPhotoHandler, foodAnalysisHandler, nutritionHandler, healthPlanHandler, reminderHandler, hpDataHandler)
 
 	// Start background reminder scheduler
 	go startReminderScheduler(reminderModel, userModel)

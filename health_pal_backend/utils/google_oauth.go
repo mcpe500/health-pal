@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"google.golang.org/api/idtoken"
-	"google.golang.org/api/option"
 )
 
 // VerifyGoogleIDToken verifies the provided Google ID token.
@@ -26,8 +25,8 @@ func VerifyGoogleIDToken(idToken string) (*idtoken.Payload, error) {
 	ctx := context.Background()
 
 	// Use the idtoken.Validate method to verify the token.
-	// The WithAudience option ensures the token was issued for our specific client ID.
-	payload, err := idtoken.Validate(ctx, idToken, option.WithAudience(clientID))
+	// Validate the token with the client ID as audience
+	payload, err := idtoken.Validate(ctx, idToken, clientID)
 	if err != nil {
 		log.Printf("Failed to validate Google ID token: %v", err)
 		return nil, fmt.Errorf("invalid Google ID token: %w", err)
